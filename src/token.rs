@@ -2,7 +2,7 @@
 
 //! Scan J source into words.
 
-use std::fmt;
+use std::fmt::{self, Write};
 use std::str::FromStr;
 
 use num_complex::Complex64;
@@ -34,8 +34,14 @@ fn parse_sentence(lex: &mut Lex) -> Result<Sentence> {
 }
 
 impl Sentence {
+    /// Return a slice of the words in this sentence.
     pub fn words(&self) -> &[Word] {
         &self.0
+    }
+
+    /// Return a J-formatted representation of the sentence.
+    pub fn display(&self) -> String {
+        format!("{}", self)
     }
 }
 
@@ -87,19 +93,40 @@ impl fmt::Display for Word {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Word::Numbers(numbers) => {
-                for (i, n) in numbers.iter().enumerate() {
+                for (i, &n) in numbers.iter().enumerate() {
                     if i > 0 {
                         write!(f, " ")?;
                     }
-                    if n.im == 0.0 {
-                        write!(f, "{}", n.re)?;
-                    } else {
-                        write!(f, "{}", n)?;
-                    }
+                    display_number(n, f)?;
                 }
                 Ok(())
             }
         }
+    }
+}
+
+fn display_number(n: Complex64, f: &mut fmt::Formatter) -> fmt::Result {
+    // TODO: Move to display of the atom?
+    let mut s = String::new();
+    if n.im == 0.0 {
+        display_f64(n.re, f)?;
+    } else {
+        display_f64(n.re, f)?;
+        write!(s, "j")?;
+        display_f64(n.im, f)?;
+    }
+    Ok(())
+}
+
+fn display_f64(n: f64, f: &mut fmt::Formatter) -> fmt::Result {
+    if n == f64::INFINITY {
+        write!(f, "_")
+    } else if n == f64::NEG_INFINITY {
+        write!(f, "__")
+    } else {
+        let mut s = format!("{}", n);
+        s = s.replace('-', "_");
+        write!(f, "{}", s)
     }
 }
 
