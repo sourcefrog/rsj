@@ -10,7 +10,7 @@ use rsj::token::{self, tokenize, Word};
 #[test]
 fn number_with_whitespace() {
     assert_eq!(
-        tokenize("  123.45  ").unwrap(),
+        tokenize("  123.45  ").unwrap().words(),
         &[Word::Numbers(vec![Complex64::new(123.45, 0.0)])]
     );
 }
@@ -18,7 +18,7 @@ fn number_with_whitespace() {
 #[test]
 fn simple_integer() {
     assert_eq!(
-        tokenize("123").unwrap(),
+        tokenize("123").unwrap().words(),
         &[Word::Numbers(vec![Complex64::new(123.0, 0.0)])]
     );
 }
@@ -26,11 +26,11 @@ fn simple_integer() {
 #[test]
 fn simple_floating_point() {
     assert_eq!(
-        tokenize("123.456").unwrap(),
+        tokenize("123.456").unwrap().words(),
         &[Word::Numbers(vec![Complex64::new(123.456, 0.0)])]
     );
     assert_eq!(
-        tokenize("0.456789").unwrap(),
+        tokenize("0.456789").unwrap().words(),
         &[Word::Numbers(vec![Complex64::new(0.456789, 0.0)])]
     );
 }
@@ -38,7 +38,7 @@ fn simple_floating_point() {
 #[test]
 fn negative() {
     assert_eq!(
-        tokenize("_1").unwrap(),
+        tokenize("_1").unwrap().words(),
         &[Word::Numbers(vec![Complex64::new(-1.0, 0.0)])]
     );
 }
@@ -46,11 +46,11 @@ fn negative() {
 #[test]
 fn infinities() {
     assert_eq!(
-        tokenize("_").unwrap(),
+        tokenize("_").unwrap().words(),
         &[Word::Numbers(vec![Complex64::new(f64::INFINITY, 0.0)])]
     );
     assert_eq!(
-        tokenize("__").unwrap(),
+        tokenize("__").unwrap().words(),
         &[Word::Numbers(vec![Complex64::new(f64::NEG_INFINITY, 0.0)])]
     );
 }
@@ -66,7 +66,7 @@ fn no_underscore_inside_numbers() {
 #[test]
 fn numbers() {
     assert_eq!(
-        tokenize("  1 2 3 _4.56 _99 __").unwrap(),
+        tokenize("  1 2 3 _4.56 _99 __").unwrap().words(),
         &[Word::Numbers(vec![
             Complex64::new(1.0, 0.0),
             Complex64::new(2.0, 0.0),

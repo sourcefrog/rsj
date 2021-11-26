@@ -2,6 +2,7 @@
 
 //! Scan J source into words.
 
+use std::fmt;
 use std::str::FromStr;
 
 use num_complex::Complex64;
@@ -16,7 +17,8 @@ pub enum Error {
 type Result<T> = std::result::Result<T, Error>;
 
 /// A sentence (like a statement) of J code, on a single line.
-type Sentence = Vec<Word>;
+#[derive(Debug, PartialEq)]
+pub struct Sentence(Vec<Word>);
 
 /// Parse J source into a sentence of words.
 pub fn tokenize(s: &str) -> Result<Sentence> {
@@ -28,7 +30,25 @@ fn parse_sentence(lex: &mut Lex) -> Result<Sentence> {
     while let Some(word) = Word::parse(lex)? {
         words.push(word);
     }
-    Ok(words)
+    Ok(Sentence(words))
+}
+
+impl Sentence {
+    pub fn words(&self) -> &[Word] {
+        &self.0
+    }
+}
+
+impl fmt::Display for Sentence {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for (i, w) in self.0.iter().enumerate() {
+            if i > 0 {
+                write!(f, " ")?;
+            }
+            write!(f, "{}", w)?;
+        }
+        Ok(())
+    }
 }
 
 /// A single J word.
@@ -59,6 +79,26 @@ impl Word {
             Ok(None)
         } else {
             Err(Error::Unexpected(lex.peek()))
+        }
+    }
+}
+
+impl fmt::Display for Word {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Word::Numbers(numbers) => {
+                for (i, n) in numbers.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, " ")?;
+                    }
+                    if n.im == 0.0 {
+                        write!(f, "{}", n.re)?;
+                    } else {
+                        write!(f, "{}", n)?;
+                    }
+                }
+                Ok(())
+            }
         }
     }
 }

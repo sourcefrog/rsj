@@ -18,7 +18,7 @@ pub fn repl() {
                 rl.add_history_entry(line.as_str());
                 println!("Line: {}", line);
                 match tokenize(&line) {
-                    Ok(sentence) => println!("{:?}", sentence),
+                    Ok(sentence) => println!("{}", sentence),
                     Err(err) => println!("error: {:?}", err),
                 }
             }
