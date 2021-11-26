@@ -62,3 +62,18 @@ fn no_underscore_inside_numbers() {
         Err(token::Error::ParseNumber(_))
     ));
 }
+
+#[test]
+fn numbers() {
+    assert_eq!(
+        tokenize("  1 2 3 _4.56 _99 __").unwrap(),
+        &[Word::Numbers(vec![
+            Complex64::new(1.0, 0.0),
+            Complex64::new(2.0, 0.0),
+            Complex64::new(3.0, 0.0),
+            Complex64::new(-4.56, 0.0),
+            Complex64::new(-99.0, 0.0),
+            Complex64::new(f64::NEG_INFINITY, 0.0),
+        ])]
+    )
+}

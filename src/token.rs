@@ -19,6 +19,19 @@ type Result<T> = std::result::Result<T, Error>;
 /// A sentence (like a statement) of J code, on a single line.
 type Sentence = Vec<Word>;
 
+/// Parse J source into a sentence of words.
+pub fn tokenize(s: &str) -> Result<Sentence> {
+    parse_sentence(&mut Lex::new(s))
+}
+
+fn parse_sentence(lex: &mut Lex) -> Result<Sentence> {
+    let mut words = Vec::new();
+    while let Some(word) = Word::parse(lex)? {
+        words.push(word);
+    }
+    Ok(words)
+}
+
 /// A single J word.
 ///
 /// Note that a list of numbers counts as a single word, even though it contains spaces.
@@ -74,6 +87,7 @@ impl Lex {
     }
 
     /// Take the next character, or None at end of input.
+    #[allow(unused)]
     pub fn try_take(&mut self) -> Option<char> {
         if self.is_end() {
             None
@@ -81,65 +95,75 @@ impl Lex {
             Some(self.take())
         }
     }
-}
 
-impl Word {
-    fn parse(lex: &mut Lex) -> Result<Self> {
-        loop {
-            // Eat any leading whitespace.
-            if lex.is_end() {
-                return Err(Error::Eof);
-            } else if lex.peek().is_ascii_whitespace() {
-                lex.take();
+    /// Drop any leading whitespace
+    pub fn drop_whitespace(&mut self) {
+        while !self.is_end() {
+            if self.peek().is_ascii_whitespace() {
+                self.take();
             } else {
                 break;
             }
         }
-        if lex.peek().is_ascii_digit() || lex.peek() == '_' {
-            // TODO: Parse complex numbers with j
-            // TODO: `e` exponents.
-            // TODO: `x` and `p` for polar coordinates?
-            let mut num_str = String::new();
-            while let Some(c) = lex.try_peek() {
-                match c {
-                    '_' | '.' | '0'..='9' => {
-                        // Note: This will accept '123.13.12313' but the later float parser will fail
-                        // on it.
-                        lex.take();
-                        num_str.push(c);
-                    }
-                    ' ' | '\n' | '\r' | '\t' => break,
-                    c => return Err(Error::Unexpected(c as char)),
-                }
-            }
-            let number = if num_str == "_" {
-                Complex64::new(f64::INFINITY, 0.0)
-            } else if num_str == "__" {
-                Complex64::new(f64::NEG_INFINITY, 0.0)
+    }
+}
+
+impl Word {
+    fn parse(lex: &mut Lex) -> Result<Option<Word>> {
+        // Take as many contiguous numbers as we can as one list-of-numbers "word".
+        let mut numbers = Vec::new();
+        loop {
+            lex.drop_whitespace();
+            if let Some(number) = parse_number(lex)? {
+                numbers.push(number)
             } else {
-                if num_str.chars().next() == Some('_') {
-                    num_str.replace_range(0..=0, "-");
-                }
-                Complex64::from_str(&num_str).map_err(Error::ParseNumber)?
-            };
-            // TODO: Continue on to read multiple numbers
-            Ok(Word::Numbers(vec![number]))
+                break;
+            }
+        }
+        if !numbers.is_empty() {
+            Ok(Some(Word::Numbers(numbers)))
+        } else if lex.is_end() {
+            Ok(None)
         } else {
-            return Err(Error::Unexpected(lex.peek()));
+            Err(Error::Unexpected(lex.peek()))
         }
     }
 }
 
-/// Parse J source into a stream of tokens.
-pub fn tokenize(s: &str) -> Result<Sentence> {
-    let mut sentence: Sentence = Vec::new();
-    let mut lex = Lex::new(s);
-    loop {
-        match Word::parse(&mut lex) {
-            Ok(word) => sentence.push(word),
-            Err(Error::Eof) => break,
-            Err(e) => return Err(e),
-        }
+/// Take one number, if there is one.
+fn parse_number(lex: &mut Lex) -> Result<Option<Complex64>> {
+    if lex.is_end() {
+        return Ok(None);
     }
-    Ok(sentence)
+    if lex.peek().is_ascii_digit() || lex.peek() == '_' {
+        // TODO: Parse complex numbers with j
+        // TODO: `e` exponents.
+        // TODO: `x` and `p` for polar coordinates?
+        let mut num_str = String::new();
+        while let Some(c) = lex.try_peek() {
+            match c {
+                '_' | '.' | '0'..='9' => {
+                    // Note: This will accept '123.13.12313' but the later float parser will fail
+                    // on it.
+                    lex.take();
+                    num_str.push(c);
+                }
+                ' ' | '\n' | '\r' | '\t' => break,
+                c => return Err(Error::Unexpected(c as char)),
+            }
+        }
+        let number = if num_str == "_" {
+            Complex64::new(f64::INFINITY, 0.0)
+        } else if num_str == "__" {
+            Complex64::new(f64::NEG_INFINITY, 0.0)
+        } else {
+            if num_str.starts_with('_') {
+                num_str.replace_range(0..=0, "-");
+            }
+            Complex64::from_str(&num_str).map_err(Error::ParseNumber)?
+        };
+        Ok(Some(number))
+    } else {
+        Ok(None) // Doesn't look like a number
+    }
 }
