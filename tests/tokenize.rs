@@ -57,8 +57,8 @@ fn infinities() {
 
 #[test]
 fn no_underscore_inside_numbers() {
-    assert_eq!(
-        tokenize("1_000").unwrap_err(),
-        token::Error::Unexpected('_')
-    );
+    assert!(matches!(
+        tokenize("1_000"),
+        Err(token::Error::ParseNumber(_))
+    ));
 }

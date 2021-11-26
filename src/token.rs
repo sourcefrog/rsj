@@ -100,39 +100,25 @@ impl Word {
             // TODO: `e` exponents.
             // TODO: `x` and `p` for polar coordinates?
             let mut num_str = String::new();
-            let mut num_underscores = 0;
             while let Some(c) = lex.try_peek() {
-                if c == '_' {
-                    lex.take();
-                    if !num_str.is_empty() {
-                        return Err(Error::Unexpected(c)); // No _ in the middle of a number
-                    } else {
-                        num_underscores += 1;
+                match c {
+                    '_' | '.' | '0'..='9' => {
+                        // Note: This will accept '123.13.12313' but the later float parser will fail
+                        // on it.
+                        lex.take();
+                        num_str.push(c);
                     }
-                } else if c.is_ascii_digit() || c == '.' {
-                    // Note: This will accept '123.13.12313' but the later float parser will fail
-                    // on it.
-                    lex.take();
-                    num_str.push(c);
-                } else if c.is_ascii_whitespace() {
-                    break;
-                } else {
-                    return Err(Error::Unexpected(c as char));
+                    ' ' | '\n' | '\r' | '\t' => break,
+                    c => return Err(Error::Unexpected(c as char)),
                 }
             }
-            let number = if num_str == "" {
-                if num_underscores == 1 {
-                    Complex64::new(f64::INFINITY, 0.0)
-                } else if num_underscores == 2 {
-                    Complex64::new(f64::NEG_INFINITY, 0.0)
-                } else {
-                    return Err(Error::Unexpected('_'));
-                }
+            let number = if num_str == "_" {
+                Complex64::new(f64::INFINITY, 0.0)
+            } else if num_str == "__" {
+                Complex64::new(f64::NEG_INFINITY, 0.0)
             } else {
-                if num_underscores == 1 {
-                    num_str.insert(0, '-');
-                } else if num_underscores > 1 {
-                    return Err(Error::Unexpected('_'));
+                if num_str.chars().next() == Some('_') {
+                    num_str.replace_range(0..=0, "-");
                 }
                 Complex64::from_str(&num_str).map_err(Error::ParseNumber)?
             };
