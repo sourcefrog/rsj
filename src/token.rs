@@ -81,12 +81,23 @@ impl fmt::Display for Sentence {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Word {
     Constant(noun::Noun),
+    Verb(String),
 }
 
 impl Scan for Word {
     fn scan(lex: &mut Lex) -> Result<Option<Word>> {
         // Take as many contiguous numbers as we can as one list-of-numbers "word".
         let mut numbers = Vec::new();
+        lex.drop_whitespace();
+        if lex.is_end() {
+            return Ok(None);
+        }
+        let c = lex.peek();
+        match c {
+            '+' | '-' | '*' | '%' => return Ok(Some(Word::Verb(format!("{}", lex.take())))),
+            _ => (),
+        }
+
         loop {
             lex.drop_whitespace();
             if let Some(number) = Complex64::scan(lex)? {
@@ -111,6 +122,7 @@ impl fmt::Display for Word {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Word::Constant(noun) => write!(f, "{}", noun),
+            Word::Verb(v) => write!(f, "{}", v),
         }
     }
 }
