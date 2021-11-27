@@ -60,13 +60,8 @@ impl Scan for Word {
                 break;
             }
         }
-        match lex.peek() {
-            '-' => {
-                lex.take();
-                return Ok(Some(Word::Verb(&primitive::MINUS)));
-            }
-            //| '-' | '*' | '%' => return Ok(Some(Word::Verb(format!("{}", lex.take())))),
-            _ => (),
+        if lex.take_if('-') {
+            return Ok(Some(Word::Verb(&primitive::MINUS)));
         }
         // Take as many contiguous numbers as we can as one list-of-numbers "word".
         let mut numbers = Vec::new();

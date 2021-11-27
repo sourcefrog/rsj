@@ -48,6 +48,16 @@ impl Lex {
         c
     }
 
+    /// Take the next character if it's exactly `c` and return true; otherwise false.
+    pub fn take_if(&mut self, c: char) -> bool {
+        if self.try_peek() == Some(c) {
+            self.take();
+            true
+        } else {
+            false
+        }
+    }
+
     /// Take `n` characters as a String.
     #[allow(unused)]
     pub fn take_string(&mut self, n: usize) -> String {
