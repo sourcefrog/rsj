@@ -6,6 +6,7 @@ pub mod error;
 pub mod eval;
 pub mod lex;
 pub mod noun;
+pub mod parse;
 pub mod primitive;
 pub mod repl;
 pub mod verb;

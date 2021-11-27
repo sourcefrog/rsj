@@ -11,12 +11,13 @@ use pretty_assertions::assert_eq;
 
 use rsj::error::Error;
 use rsj::noun::Noun;
+use rsj::parse::parse;
 use rsj::primitive::Primitive;
-use rsj::word::{tokenize, Word};
+use rsj::word::Word;
 
 #[test]
 fn number_with_whitespace() {
-    let sentence = tokenize("  123.45  ").unwrap();
+    let sentence = parse("  123.45  ").unwrap();
     assert_eq!(sentence.words(), &[Word::Noun(Noun::from(123.45))]);
     assert_eq!(sentence.display(), "123.45");
 }
@@ -24,29 +25,29 @@ fn number_with_whitespace() {
 #[test]
 fn simple_integer() {
     assert_eq!(
-        tokenize("123").unwrap().words(),
+        parse("123").unwrap().words(),
         &[Word::Noun(Noun::from(123.0))]
     );
-    assert_eq!(tokenize("123").unwrap().display(), "123");
+    assert_eq!(parse("123").unwrap().display(), "123");
 }
 
 #[test]
 fn simple_floating_point() {
-    let sentence = tokenize("123.456").unwrap();
+    let sentence = parse("123.456").unwrap();
     assert_eq!(sentence.display(), "123.456");
     assert_eq!(sentence.words(), &[Word::Noun(123.456.into())]);
 }
 
 #[test]
 fn fraction() {
-    let s = tokenize("0.456789").unwrap();
+    let s = parse("0.456789").unwrap();
     assert_eq!(s.display(), "0.456789");
     assert_eq!(s.words(), &[Word::Noun(0.456789.into())]);
 }
 
 #[test]
 fn negative() {
-    let s = tokenize("_1").unwrap();
+    let s = parse("_1").unwrap();
     assert_eq!(s.display(), "_1");
     assert_eq!(s.words(), &[Word::Noun(Noun::from(-1.0))]);
 }
@@ -54,36 +55,36 @@ fn negative() {
 #[test]
 fn infinities() {
     assert_eq!(
-        tokenize("_").unwrap().words(),
+        parse("_").unwrap().words(),
         &[Word::Noun(Noun::from(f64::INFINITY))]
     );
-    assert_eq!(tokenize("_").unwrap().display(), "_");
+    assert_eq!(parse("_").unwrap().display(), "_");
 
     assert_eq!(
-        tokenize("__").unwrap().words(),
+        parse("__").unwrap().words(),
         &[Word::Noun(Noun::from(f64::NEG_INFINITY))]
     );
-    assert_eq!(tokenize("__").unwrap().display(), "__");
+    assert_eq!(parse("__").unwrap().display(), "__");
 }
 
 #[test]
 fn primitive() {
     let minus = Primitive::lookup("-").unwrap();
     assert_eq!(
-        tokenize(" - -").unwrap().words(),
+        parse(" - -").unwrap().words(),
         &[Word::Verb(minus), Word::Verb(minus),]
     );
 }
 
 #[test]
 fn no_underscore_inside_numbers() {
-    assert!(matches!(tokenize("1_000"), Err(Error::ParseNumber(_))));
+    assert!(matches!(parse("1_000"), Err(Error::ParseNumber(_))));
 }
 
 #[test]
 fn several_numbers_in_one_word() {
     assert_eq!(
-        tokenize("  1 2 3 _4.56 _99 __").unwrap().words(),
+        parse("  1 2 3 _4.56 _99 __").unwrap().words(),
         &[Word::Noun(Noun::matrix_from_vec(vec![
             Complex64::new(1.0, 0.0),
             Complex64::new(2.0, 0.0),
@@ -94,7 +95,7 @@ fn several_numbers_in_one_word() {
         ]))]
     );
     assert_eq!(
-        tokenize("  1 2 3 _4.56 _99 __").unwrap().display(),
+        parse("  1 2 3 _4.56 _99 __").unwrap().display(),
         "1 2 3 _4.56 _99 __"
     );
 }

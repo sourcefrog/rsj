@@ -3,8 +3,9 @@
 //! Evaluate sentences.
 
 use crate::error::Result;
+use crate::parse::parse;
 use crate::verb::Verb;
-use crate::word::{tokenize, Sentence, Word};
+use crate::word::{Sentence, Word};
 
 /// A J interpreter session.
 #[derive(Debug, Default)]
@@ -17,7 +18,7 @@ impl Session {
 
     /// Evaluate one line (as text) and return the result (as text).
     pub fn eval_text(&self, line: &str) -> String {
-        match tokenize(line).and_then(|s| self.eval_sentence(&s)) {
+        match parse(line).and_then(|s| self.eval_sentence(&s)) {
             Ok(word) => format!("{}", word),
             Err(err) => format!("error: {:?}", err),
         }
@@ -27,7 +28,7 @@ impl Session {
     pub fn eval_sentence(&self, sentence: &Sentence) -> Result<Sentence> {
         // Evaluation proceeds from right to left, looking for patterns that can be evaluated
         // and reduced.
-        let mut stack: Vec<Word> = sentence.words().iter().cloned().collect();
+        let mut stack: Vec<Word> = sentence.words().to_vec();
         // We're currently trying to evaluate stack[cursor..(cursor+4)].
         for cursor in (0..(stack.len())).rev() {
             // dbg!(&stack);

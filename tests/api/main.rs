@@ -1,4 +1,4 @@
 // Copyright 2021 Martin Pool
 
 mod examples;
-mod word;
+mod parse;
