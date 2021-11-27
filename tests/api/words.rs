@@ -9,8 +9,9 @@
 use num_complex::Complex64;
 use pretty_assertions::assert_eq;
 
+use rsj::error::Error;
 use rsj::noun::Noun;
-use rsj::words::{self, tokenize, Word};
+use rsj::words::{tokenize, Word};
 
 #[test]
 fn number_with_whitespace() {
@@ -66,10 +67,7 @@ fn infinities() {
 
 #[test]
 fn no_underscore_inside_numbers() {
-    assert!(matches!(
-        tokenize("1_000"),
-        Err(words::Error::ParseNumber(_))
-    ));
+    assert!(matches!(tokenize("1_000"), Err(Error::ParseNumber(_))));
 }
 
 #[test]

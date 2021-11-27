@@ -2,6 +2,7 @@
 
 //! Toy implementation of J in Rust.
 
+pub mod error;
 pub mod lex;
 pub mod noun;
 pub mod repl;

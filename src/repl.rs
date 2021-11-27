@@ -9,12 +9,6 @@ use crate::words::tokenize;
 
 const PROMPT: &str = "   ";
 
-/// An interpreter error.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Error {}
-
-// type Result<T> = std::result::Result<T, Error>;
-
 /// A J interpreter session.
 #[derive(Debug, Default)]
 pub struct Session {}

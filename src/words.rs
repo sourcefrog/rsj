@@ -14,17 +14,9 @@ use std::str::FromStr;
 
 use num_complex::Complex64;
 
+use crate::error::{Error, Result};
 use crate::lex::Lex;
 use crate::noun::{self, Noun};
-
-/// An error parsing J source.
-#[derive(Debug, PartialEq)]
-pub enum Error {
-    Unexpected(char),
-    ParseNumber(num_complex::ParseComplexError<std::num::ParseFloatError>),
-}
-
-type Result<T> = std::result::Result<T, Error>;
 
 /// A sentence (like a statement) of J code, on a single line.
 #[derive(Debug, PartialEq)]
