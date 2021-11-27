@@ -86,34 +86,38 @@ pub enum Word {
 
 impl Scan for Word {
     fn scan(lex: &mut Lex) -> Result<Option<Word>> {
-        // Take as many contiguous numbers as we can as one list-of-numbers "word".
-        let mut numbers = Vec::new();
-        lex.drop_whitespace();
-        if lex.is_end() {
-            return Ok(None);
-        }
-        let c = lex.peek();
-        match c {
-            '+' | '-' | '*' | '%' => return Ok(Some(Word::Verb(format!("{}", lex.take())))),
-            _ => (),
-        }
-
         loop {
             lex.drop_whitespace();
-            if let Some(number) = Complex64::scan(lex)? {
-                numbers.push(number)
-            } else {
-                break;
+            if lex.is_end() {
+                return Ok(None);
             }
-        }
-        if numbers.len() == 1 {
-            Ok(Some(Word::Constant(Noun::Number(numbers[0]))))
-        } else if !numbers.is_empty() {
-            Ok(Some(Word::Constant(Noun::matrix_from_vec(numbers))))
-        } else if lex.is_end() {
-            Ok(None)
-        } else {
-            Err(Error::Unexpected(lex.peek()))
+            if lex.starts_with("NB.") {
+                lex.drop_line();
+                continue;
+            }
+            match lex.peek() {
+                '+' | '-' | '*' | '%' => return Ok(Some(Word::Verb(format!("{}", lex.take())))),
+                _ => (),
+            }
+            // Take as many contiguous numbers as we can as one list-of-numbers "word".
+            let mut numbers = Vec::new();
+            loop {
+                lex.drop_whitespace();
+                if let Some(number) = Complex64::scan(lex)? {
+                    numbers.push(number)
+                } else {
+                    break;
+                }
+            }
+            if numbers.len() == 1 {
+                return Ok(Some(Word::Constant(Noun::Number(numbers[0]))));
+            } else if !numbers.is_empty() {
+                return Ok(Some(Word::Constant(Noun::matrix_from_vec(numbers))));
+            } else if lex.is_end() {
+                return Ok(None);
+            } else {
+                return Err(Error::Unexpected(lex.peek()));
+            }
         }
     }
 }
@@ -223,7 +227,7 @@ impl Lex {
         }
     }
 
-    /// Drop any leading whitespace
+    /// Drop any leading whitespace.
     pub fn drop_whitespace(&mut self) {
         while !self.is_end() {
             if self.peek().is_ascii_whitespace() {
@@ -232,5 +236,34 @@ impl Lex {
                 break;
             }
         }
+    }
+
+    /// Drop the rest of this line.
+    pub fn drop_line(&mut self) {
+        while !self.is_end() {
+            if self.take() == '\n' {
+                break;
+            }
+        }
+    }
+
+    fn remaining(&self) -> usize {
+        assert!(self.pos <= self.chars.len());
+        self.chars.len() - self.pos
+    }
+
+    /// Test if the next few characters match `s`.
+    pub fn starts_with(&self, s: &str) -> bool {
+        if self.remaining() < s.len() {
+            return false;
+        }
+        let mut p = self.pos;
+        for c in s.chars() {
+            if c != self.chars[p] {
+                return false;
+            }
+            p += 1;
+        }
+        true
     }
 }

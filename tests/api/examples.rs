@@ -29,10 +29,12 @@ fn test_one_example(path: &Path) {
     while let Some(input) = lines.next() {
         println!("{}", input);
         let input = input.strip_prefix(PROMPT).expect("prompt on input line");
-        let expected = lines.next().unwrap();
-        assert!(!expected.starts_with(PROMPT));
-
         let output = session.eval_text(input);
-        assert_eq!(output, expected);
+
+        if !output.is_empty() {
+            let expected = lines.next().unwrap();
+            assert!(!expected.starts_with(PROMPT));
+            assert_eq!(output, expected);
+        }
     }
 }

@@ -46,7 +46,10 @@ pub fn repl() {
         match rl.readline(PROMPT) {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
-                println!("{}", session.eval_text(&line));
+                let output = session.eval_text(&line);
+                if !output.is_empty() {
+                    println!("{}", output);
+                }
             }
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C");
