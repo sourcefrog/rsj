@@ -7,7 +7,7 @@ use std::path::Path;
 
 use pretty_assertions::assert_eq;
 
-use rsj::repl::Session;
+use rsj::eval::Session;
 
 const PROMPT: &str = "   ";
 const EXAMPLE_DIR: &str = "t";
