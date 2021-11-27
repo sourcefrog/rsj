@@ -17,10 +17,10 @@ use num_complex::Complex64;
 use crate::error::{Error, Result};
 use crate::lex::Lex;
 use crate::noun::Noun;
-use crate::verb::Inherent;
+use crate::primitive::Primitive;
 
 /// A sentence (like a statement) of J code, on a single line.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Sentence(Vec<Word>);
 
 /// Parse J source into a sentence of words.
@@ -50,6 +50,11 @@ impl Sentence {
     /// Return a J-formatted representation of the sentence.
     pub fn display(&self) -> String {
         format!("{}", self)
+    }
+
+    /// Wrap a vec of words as a Sentence.
+    pub fn from_vec(vec: Vec<Word>) -> Sentence {
+        Sentence(vec)
     }
 }
 
@@ -81,8 +86,8 @@ impl fmt::Display for Sentence {
 /// So, in J, `1 2 3 + 4 5 6` is three words.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Word {
-    Constant(Noun),
-    Verb(&'static Inherent),
+    Noun(Noun),
+    Verb(&'static Primitive),
 }
 
 impl Scan for Word {
@@ -99,9 +104,9 @@ impl Scan for Word {
             }
         }
         match lex.peek() {
-            '+' => {
+            '-' => {
                 return Ok(Some(Word::Verb(
-                    Inherent::lookup_single(lex.take()).unwrap(),
+                    Primitive::lookup_single(lex.take()).unwrap(),
                 )))
             }
             //| '-' | '*' | '%' => return Ok(Some(Word::Verb(format!("{}", lex.take())))),
@@ -118,9 +123,9 @@ impl Scan for Word {
             }
         }
         if numbers.len() == 1 {
-            Ok(Some(Word::Constant(Noun::Number(numbers[0]))))
+            Ok(Some(Word::Noun(Noun::Number(numbers[0]))))
         } else if !numbers.is_empty() {
-            Ok(Some(Word::Constant(Noun::matrix_from_vec(numbers))))
+            Ok(Some(Word::Noun(Noun::matrix_from_vec(numbers))))
         } else if lex.is_end() {
             Ok(None)
         } else {
@@ -132,7 +137,7 @@ impl Scan for Word {
 impl fmt::Display for Word {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Word::Constant(noun) => write!(f, "{}", noun),
+            Word::Noun(noun) => write!(f, "{}", noun),
             Word::Verb(v) => write!(f, "{}", v),
         }
     }

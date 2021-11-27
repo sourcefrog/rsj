@@ -28,6 +28,9 @@ fn test_one_example(path: &Path) {
     let mut lines = body.lines();
     while let Some(input) = lines.next() {
         println!("{}", input);
+        if input.is_empty() {
+            continue;
+        }
         let input = input.strip_prefix(PROMPT).expect("prompt on input line");
         let output = session.eval_text(input);
 

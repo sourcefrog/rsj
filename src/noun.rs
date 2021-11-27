@@ -48,7 +48,7 @@ pub enum Atom {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Matrix(Vec<Complex64>);
+pub struct Matrix(pub Vec<Complex64>);
 
 impl Matrix {
     pub fn from_vec(vec: Vec<Complex64>) -> Self {
