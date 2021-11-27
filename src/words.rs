@@ -101,31 +101,32 @@ impl Scan for Word {
             }
             if lex.starts_with("NB.") {
                 lex.drop_line();
-                continue;
-            }
-            match lex.peek() {
-                '+' | '-' | '*' | '%' => return Ok(Some(Word::Verb(format!("{}", lex.take())))),
-                _ => (),
-            }
-            // Take as many contiguous numbers as we can as one list-of-numbers "word".
-            let mut numbers = Vec::new();
-            loop {
-                lex.drop_whitespace();
-                if let Some(number) = Complex64::scan(lex)? {
-                    numbers.push(number)
-                } else {
-                    break;
-                }
-            }
-            if numbers.len() == 1 {
-                return Ok(Some(Word::Constant(Noun::Number(numbers[0]))));
-            } else if !numbers.is_empty() {
-                return Ok(Some(Word::Constant(Noun::matrix_from_vec(numbers))));
-            } else if lex.is_end() {
-                return Ok(None);
             } else {
-                return Err(Error::Unexpected(lex.peek()));
+                break;
             }
+        }
+        match lex.peek() {
+            '+' | '-' | '*' | '%' => return Ok(Some(Word::Verb(format!("{}", lex.take())))),
+            _ => (),
+        }
+        // Take as many contiguous numbers as we can as one list-of-numbers "word".
+        let mut numbers = Vec::new();
+        loop {
+            lex.drop_whitespace();
+            if let Some(number) = Complex64::scan(lex)? {
+                numbers.push(number)
+            } else {
+                break;
+            }
+        }
+        if numbers.len() == 1 {
+            Ok(Some(Word::Constant(Noun::Number(numbers[0]))))
+        } else if !numbers.is_empty() {
+            Ok(Some(Word::Constant(Noun::matrix_from_vec(numbers))))
+        } else if lex.is_end() {
+            Ok(None)
+        } else {
+            Err(Error::Unexpected(lex.peek()))
         }
     }
 }
