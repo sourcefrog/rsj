@@ -4,6 +4,10 @@
 //!
 //! Scanning proceeds left to right and produces a list of "words" which might be constant nouns,
 //! verbs, etc. Comments are dropped at this stage.
+//!
+//! The most interesting thing about J's grammar is that a space separated list of numbers is a
+//! single "word": this accounts for how `* 1 2 3` "knows" to multiply all the numbers: they're
+//! effectively a single word which constitues the argument.
 
 use std::fmt;
 use std::str::FromStr;
