@@ -25,19 +25,20 @@ impl Session {
 
     /// Evaluate a parsed sentence and return the result.
     pub fn eval_sentence(&self, sentence: &Sentence) -> Result<Sentence> {
-        // Evaluation proceeds from right to left by pushing words onto a stack, and then reducing
-        // the stack if it matches any of several patterns.
-        let mut stack: Vec<Word> = Vec::new();
-        for w in sentence.words().iter().rev() {
-            stack.push(w.clone());
+        // Evaluation proceeds from right to left, looking for patterns that can be evaluated
+        // and reduced.
+        let mut stack: Vec<Word> = sentence.words().iter().cloned().collect();
+        // We're currently trying to evaluate stack[cursor..(cursor+4)].
+        for cursor in (0..(stack.len())).rev() {
             // dbg!(&stack);
-            if stack.len() >= 2 {
-                if let Word::Verb(v) = &stack[1] {
-                    if let Word::Noun(y) = &stack[0] {
-                        let a = v.monad(y)?;
-                        stack.pop();
-                        stack.pop();
-                        stack.push(Word::Noun(a));
+            if stack.len() - cursor >= 2 {
+                // TODO: Just seeing `VERB NOUN` is not enough to evaluate the verb monadically,
+                // because there might be more nouns to the left. We should wait, unless this is
+                // the left-hand end of the input...
+                if let Word::Verb(v) = &stack[cursor] {
+                    if let Word::Noun(y) = &stack[cursor + 1] {
+                        stack[cursor] = Word::Noun(v.monad(y)?);
+                        stack.remove(cursor + 1);
                     }
                 }
             }
