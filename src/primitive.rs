@@ -67,6 +67,8 @@ impl std::cmp::PartialEq for Primitive {
     }
 }
 
+pub const MINUS: Primitive = Primitive("-", negate);
+
 fn negate(y: &Noun) -> Result<Noun> {
     match y {
         // TODO: Abstract element-at-a-time etc. This shouldn't need special cases for one
@@ -76,7 +78,26 @@ fn negate(y: &Noun) -> Result<Noun> {
     }
 }
 
-pub const MINUS: Primitive = Primitive("-", negate);
+pub const MINUS_DOT: Primitive = Primitive("-.", not);
+
+fn not(y: &Noun) -> Result<Noun> {
+    match y {
+        // TODO: Abstract element-at-a-time etc. This shouldn't need special cases for one
+        // number vs many.
+        Noun::Number(a) => {
+            if a.im != 0.0 {
+                todo!()
+            } else if a.re == 0.0 {
+                Ok(1.0.into())
+            } else if a.re == 1.0 {
+                Ok(0.0.into())
+            } else {
+                todo!()
+            }
+        }
+        Noun::Matrix(_) => todo!(),
+    }
+}
 
 /// All primitive verbs.
 const PRIMITIVES: &[Primitive] = &[MINUS];

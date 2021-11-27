@@ -61,6 +61,9 @@ impl Scan for Word {
             }
         }
         if lex.take_if('-') {
+            if lex.take_if('.') {
+                return Ok(Some(Word::Verb(&primitive::MINUS_DOT)));
+            }
             return Ok(Some(Word::Verb(&primitive::MINUS)));
         }
         // Take as many contiguous numbers as we can as one list-of-numbers "word".
