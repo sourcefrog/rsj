@@ -1,6 +1,9 @@
 // Copyright 2021 Martin Pool
 
 //! Scan J source into words.
+//!
+//! Scanning proceeds left to right and produces a list of "words" which might be constant nouns,
+//! verbs, etc. Comments are dropped at this stage.
 
 use std::fmt;
 use std::str::FromStr;

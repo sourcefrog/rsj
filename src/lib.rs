@@ -4,6 +4,6 @@
 
 pub mod noun;
 pub mod repl;
-pub mod token;
+pub mod words;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

@@ -1,12 +1,16 @@
 // Copyright 2021 Martin Pool
 
-//! Test tokenizing sentences.
+//! Tests for scanning text into sentences of words.
+//!
+//! The scanner is primarily tested by parsing example files from the `t/` directory, but these
+//! tests are more fundamental and also exercise aspects of the API that are less visible in text,
+//! including the fact that a word can contain multiple numbers.
 
 use num_complex::Complex64;
 use pretty_assertions::assert_eq;
 
 use rsj::noun::Noun;
-use rsj::token::{self, tokenize, Word};
+use rsj::words::{self, tokenize, Word};
 
 #[test]
 fn number_with_whitespace() {
@@ -64,7 +68,7 @@ fn infinities() {
 fn no_underscore_inside_numbers() {
     assert!(matches!(
         tokenize("1_000"),
-        Err(token::Error::ParseNumber(_))
+        Err(words::Error::ParseNumber(_))
     ));
 }
 
