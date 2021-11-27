@@ -2,10 +2,12 @@
 
 //! Scan J source into words.
 
-use std::fmt::{self, Write};
+use std::fmt;
 use std::str::FromStr;
 
 use num_complex::Complex64;
+
+use crate::noun::{self, Noun};
 
 /// An error parsing J source.
 #[derive(Debug, PartialEq)]
@@ -14,6 +16,7 @@ pub enum Error {
     ParseNumber(num_complex::ParseComplexError<std::num::ParseFloatError>),
 }
 
+#[allow(unused)]
 type Result<T> = std::result::Result<T, Error>;
 
 /// A sentence (like a statement) of J code, on a single line.
@@ -63,8 +66,7 @@ impl fmt::Display for Sentence {
 /// So, in J, `1 2 3 + 4 5 6` is three words.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Word {
-    /// A list of one or more numbers.
-    Numbers(Vec<Complex64>),
+    Constant(noun::Noun),
 }
 
 impl Word {
@@ -79,8 +81,10 @@ impl Word {
                 break;
             }
         }
-        if !numbers.is_empty() {
-            Ok(Some(Word::Numbers(numbers)))
+        if numbers.len() == 1 {
+            Ok(Some(Word::Constant(Noun::Number(numbers[0]))))
+        } else if !numbers.is_empty() {
+            Ok(Some(Word::Constant(noun::Noun::matrix_from_vec(numbers))))
         } else if lex.is_end() {
             Ok(None)
         } else {
@@ -92,41 +96,8 @@ impl Word {
 impl fmt::Display for Word {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Word::Numbers(numbers) => {
-                for (i, &n) in numbers.iter().enumerate() {
-                    if i > 0 {
-                        write!(f, " ")?;
-                    }
-                    display_number(n, f)?;
-                }
-                Ok(())
-            }
+            Word::Constant(noun) => write!(f, "{}", noun),
         }
-    }
-}
-
-fn display_number(n: Complex64, f: &mut fmt::Formatter) -> fmt::Result {
-    // TODO: Move to display of the atom?
-    let mut s = String::new();
-    if n.im == 0.0 {
-        display_f64(n.re, f)?;
-    } else {
-        display_f64(n.re, f)?;
-        write!(s, "j")?;
-        display_f64(n.im, f)?;
-    }
-    Ok(())
-}
-
-fn display_f64(n: f64, f: &mut fmt::Formatter) -> fmt::Result {
-    if n == f64::INFINITY {
-        write!(f, "_")
-    } else if n == f64::NEG_INFINITY {
-        write!(f, "__")
-    } else {
-        let mut s = format!("{}", n);
-        s = s.replace('-', "_");
-        write!(f, "{}", s)
     }
 }
 

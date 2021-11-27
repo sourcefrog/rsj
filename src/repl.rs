@@ -9,6 +9,12 @@ use crate::token::tokenize;
 
 const PROMPT: &str = "   ";
 
+/// An interpreter error.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Error {}
+
+// type Result<T> = std::result::Result<T, Error>;
+
 /// A J interpreter session.
 #[derive(Debug, Default)]
 pub struct Session {}
@@ -25,6 +31,11 @@ impl Session {
             Err(err) => format!("error: {:?}", err),
         }
     }
+
+    // /// Evaluate a parsed line and return the object result.
+    // pub fn eval_sentence(&self, sentence: &Sentence) -> Result<Sentence> {
+    //     Ok(sentence.to_owned())
+    // }
 }
 
 /// Read and evaluate input from stdin until stopped by ^c or ^d.
