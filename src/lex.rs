@@ -78,19 +78,11 @@ impl Lex {
         }
     }
 
-    fn remaining(&self) -> usize {
-        assert!(self.pos <= self.chars.len());
-        self.chars.len() - self.pos
-    }
-
     /// Test if the next few characters match `s`.
     pub fn starts_with(&self, s: &str) -> bool {
-        if self.remaining() < s.len() {
-            return false;
-        }
         let mut p = self.pos;
         for c in s.chars() {
-            if c != self.chars[p] {
+            if self.chars.get(p) != Some(&c) {
                 return false;
             }
             p += 1;
