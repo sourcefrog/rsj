@@ -101,7 +101,7 @@ impl Scan for Word {
         match lex.peek() {
             '+' => {
                 return Ok(Some(Word::Verb(
-                    Inherent::lookup(&lex.take_string(1)).unwrap(),
+                    Inherent::lookup_single(lex.take()).unwrap(),
                 )))
             }
             //| '-' | '*' | '%' => return Ok(Some(Word::Verb(format!("{}", lex.take())))),

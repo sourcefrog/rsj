@@ -36,6 +36,12 @@ pub struct Inherent(
 );
 
 impl Inherent {
+    /// Lookup a single-character inherent verb.
+    pub fn lookup_single(name: char) -> Option<&'static Inherent> {
+        let name = name.to_string();
+        INHERENTS.iter().find(|i| i.0 == name)
+    }
+
     /// Lookup an inherent verb by name.
     pub fn lookup(name: &str) -> Option<&'static Inherent> {
         INHERENTS.iter().find(|i| i.0 == name)

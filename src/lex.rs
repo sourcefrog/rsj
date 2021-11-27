@@ -49,6 +49,7 @@ impl Lex {
     }
 
     /// Take `n` characters as a String.
+    #[allow(unused)]
     pub fn take_string(&mut self, n: usize) -> String {
         (0..n).map(|_| self.take()).collect()
     }
