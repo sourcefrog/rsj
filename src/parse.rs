@@ -16,7 +16,7 @@ use num_complex::Complex64;
 use crate::error::{Error, Result};
 use crate::lex::Lex;
 use crate::noun::Noun;
-use crate::primitive::Primitive;
+use crate::primitive;
 use crate::word::{Sentence, Word};
 
 /// Parse J source into a sentence of words.
@@ -62,9 +62,8 @@ impl Scan for Word {
         }
         match lex.peek() {
             '-' => {
-                return Ok(Some(Word::Verb(
-                    Primitive::lookup_single(lex.take()).unwrap(),
-                )))
+                lex.take();
+                return Ok(Some(Word::Verb(&primitive::MINUS)));
             }
             //| '-' | '*' | '%' => return Ok(Some(Word::Verb(format!("{}", lex.take())))),
             _ => (),

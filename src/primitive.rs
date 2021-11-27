@@ -76,5 +76,7 @@ fn negate(y: &Noun) -> Result<Noun> {
     }
 }
 
+pub const MINUS: Primitive = Primitive("-", negate);
+
 /// All primitive verbs.
-const PRIMITIVES: &[Primitive] = &[Primitive("-", negate)];
+const PRIMITIVES: &[Primitive] = &[MINUS];
