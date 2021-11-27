@@ -5,7 +5,7 @@
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 
-use crate::words::tokenize;
+use crate::word::tokenize;
 
 const PROMPT: &str = "   ";
 

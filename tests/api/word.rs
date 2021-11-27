@@ -11,7 +11,7 @@ use pretty_assertions::assert_eq;
 
 use rsj::error::Error;
 use rsj::noun::Noun;
-use rsj::words::{tokenize, Word};
+use rsj::word::{tokenize, Word};
 
 #[test]
 fn number_with_whitespace() {

@@ -6,6 +6,6 @@ pub mod error;
 pub mod lex;
 pub mod noun;
 pub mod repl;
-pub mod words;
+pub mod word;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
