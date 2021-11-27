@@ -139,6 +139,7 @@ fn parse_number(lex: &mut Lex) -> Result<Option<Complex64>> {
         // TODO: Parse complex numbers with j
         // TODO: `e` exponents.
         // TODO: `x` and `p` for polar coordinates?
+        // TODO: More forms from https://www.jsoftware.com/help/dictionary/dcons.htm.
         let mut num_str = String::new();
         while let Some(c) = lex.try_peek() {
             match c {
