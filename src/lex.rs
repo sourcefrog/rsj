@@ -48,6 +48,11 @@ impl Lex {
         c
     }
 
+    /// Take `n` characters as a String.
+    pub fn take_string(&mut self, n: usize) -> String {
+        (0..n).map(|_| self.take()).collect()
+    }
+
     /// Take the next character, or None at end of input.
     #[allow(unused)]
     pub fn try_take(&mut self) -> Option<char> {

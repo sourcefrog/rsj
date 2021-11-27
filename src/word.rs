@@ -16,7 +16,8 @@ use num_complex::Complex64;
 
 use crate::error::{Error, Result};
 use crate::lex::Lex;
-use crate::noun::{self, Noun};
+use crate::noun::Noun;
+use crate::verb::Inherent;
 
 /// A sentence (like a statement) of J code, on a single line.
 #[derive(Debug, PartialEq)]
@@ -80,8 +81,8 @@ impl fmt::Display for Sentence {
 /// So, in J, `1 2 3 + 4 5 6` is three words.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Word {
-    Constant(noun::Noun),
-    Verb(String),
+    Constant(Noun),
+    Verb(&'static Inherent),
 }
 
 impl Scan for Word {
@@ -98,7 +99,12 @@ impl Scan for Word {
             }
         }
         match lex.peek() {
-            '+' | '-' | '*' | '%' => return Ok(Some(Word::Verb(format!("{}", lex.take())))),
+            '+' => {
+                return Ok(Some(Word::Verb(
+                    Inherent::lookup(&lex.take_string(1)).unwrap(),
+                )))
+            }
+            //| '-' | '*' | '%' => return Ok(Some(Word::Verb(format!("{}", lex.take())))),
             _ => (),
         }
         // Take as many contiguous numbers as we can as one list-of-numbers "word".
