@@ -7,7 +7,7 @@ use std::path::Path;
 
 use pretty_assertions::assert_eq;
 
-use rsj::token::tokenize;
+use rsj::repl::Session;
 
 const PROMPT: &str = "   ";
 const EXAMPLE_DIR: &str = "t";
@@ -23,15 +23,16 @@ fn examples() {
 }
 
 fn test_one_example(path: &Path) {
+    let session = Session::new();
     let body = fs::read_to_string(path).unwrap();
     let mut lines = body.lines();
     while let Some(input) = lines.next() {
         println!("{}", input);
         let input = input.strip_prefix(PROMPT).expect("prompt on input line");
-        let output = lines.next().unwrap();
-        assert!(!output.starts_with(PROMPT));
+        let expected = lines.next().unwrap();
+        assert!(!expected.starts_with(PROMPT));
 
-        let sentence = tokenize(input).expect("tokenize");
-        assert_eq!(sentence.display(), output);
+        let output = session.eval_text(input);
+        assert_eq!(output, expected);
     }
 }
