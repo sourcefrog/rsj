@@ -18,6 +18,12 @@ impl From<f64> for Atom {
     }
 }
 
+impl From<&Complex64> for Atom {
+    fn from(v: &Complex64) -> Self {
+        Atom::Complex(*v)
+    }
+}
+
 impl From<Complex64> for Atom {
     fn from(v: Complex64) -> Self {
         Atom::Complex(v)

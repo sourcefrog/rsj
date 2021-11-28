@@ -15,8 +15,8 @@ pub enum Noun {
     Array(Array),
 }
 
-impl From<Vec<Complex64>> for Noun {
-    fn from(vec: Vec<Complex64>) -> Noun {
+impl From<Vec<Atom>> for Noun {
+    fn from(vec: Vec<Atom>) -> Noun {
         Noun::Array(Array::from(vec))
     }
 }

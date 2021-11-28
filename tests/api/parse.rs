@@ -9,6 +9,7 @@
 use num_complex::Complex64;
 use pretty_assertions::assert_eq;
 
+use rsj::array::Array;
 use rsj::error::Error;
 use rsj::noun::Noun;
 use rsj::parse::parse;
@@ -85,14 +86,14 @@ fn no_underscore_inside_numbers() {
 fn several_numbers_in_one_word() {
     assert_eq!(
         parse("  1 2 3 _4.56 _99 __").unwrap().words(),
-        &[Word::Noun(Noun::from(vec![
+        &[Word::Noun(Noun::Array(Array::from([
             Complex64::new(1.0, 0.0),
             Complex64::new(2.0, 0.0),
             Complex64::new(3.0, 0.0),
             Complex64::new(-4.56, 0.0),
             Complex64::new(-99.0, 0.0),
             Complex64::new(f64::NEG_INFINITY, 0.0),
-        ]))]
+        ])))]
     );
     assert_eq!(
         parse("  1 2 3 _4.56 _99 __").unwrap().display(),

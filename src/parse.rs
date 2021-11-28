@@ -68,17 +68,17 @@ impl Scan for Word {
             return Ok(Some(Word::Verb(&primitive::MINUS)));
         }
         // Take as many contiguous numbers as we can as one list-of-numbers "word".
-        let mut numbers: Vec<Complex64> = Vec::new();
+        let mut numbers: Vec<Atom> = Vec::new();
         loop {
             lex.drop_whitespace();
             if let Some(number) = Complex64::scan(lex)? {
-                numbers.push(number)
+                numbers.push(number.into())
             } else {
                 break;
             }
         }
         if numbers.len() == 1 {
-            Ok(Some(Word::Noun(Noun::Atom(Atom::from(numbers[0])))))
+            Ok(Some(Word::Noun(Noun::Atom(numbers.remove(0)))))
         } else if !numbers.is_empty() {
             Ok(Some(Word::Noun(Noun::from(numbers))))
         } else if lex.is_end() {
