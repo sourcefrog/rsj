@@ -16,10 +16,9 @@ use crate::noun::Noun;
 use crate::verb::Verb;
 
 /// A builtin primitive verb, such as `-` or `<.`.
-#[derive(Clone)]
 pub struct Primitive(
     &'static str,
-    fn(&Noun) -> Result<Noun>,
+    Monad,
     // dyad: fn(&Noun, &Noun) -> Result<Noun>,
 );
 
@@ -30,7 +29,9 @@ impl Verb for Primitive {
 
     fn monad(&self, y: &Noun) -> Result<Noun> {
         // TODO: Apply with the correct rank, etc.
-        self.1(y)
+        match self.1 {
+            Monad::Zero(f) => monad_per_atom(y, f),
+        }
     }
 
     fn dyad(&self, _x: &Noun, _y: &Noun) -> Result<Noun> {
@@ -57,8 +58,6 @@ impl std::cmp::PartialEq for Primitive {
     }
 }
 
-pub const MINUS: Primitive = Primitive("-", negate);
-
 /// If the noun is an atom, apply the function to it. Otherwise, apply it to every element of the
 /// array to produce a new array of equal shape.
 // TODO: Run this automatically depending on the rank of the verb?
@@ -71,23 +70,24 @@ fn monad_per_atom(y: &Noun, f: fn(&Atom) -> Result<Atom>) -> Result<Noun> {
     }
 }
 
-fn negate(y: &Noun) -> Result<Noun> {
-    monad_per_atom(y, negate_atom)
+/// A primitive monad implementation which is applicable at one of several possible ranks.
+enum Monad {
+    /// A monad that applies per-atom.
+    Zero(fn(&Atom) -> Result<Atom>),
+    // TODO: One, Two, Infinite
 }
 
-fn negate_atom(y: &Atom) -> Result<Atom> {
+pub const MINUS: Primitive = Primitive("-", Monad::Zero(negate));
+
+fn negate(y: &Atom) -> Result<Atom> {
     match y {
         Atom::Complex(a) => Ok(Atom::Complex(-a)),
     }
 }
 
-pub const MINUS_DOT: Primitive = Primitive("-.", not);
+pub const MINUS_DOT: Primitive = Primitive("-.", Monad::Zero(not));
 
-fn not(y: &Noun) -> Result<Noun> {
-    monad_per_atom(y, not_atom)
-}
-
-fn not_atom(y: &Atom) -> Result<Atom> {
+fn not(y: &Atom) -> Result<Atom> {
     let Atom::Complex(a) = y;
     if a.im != 0.0 {
         Err(Error::Domain)
