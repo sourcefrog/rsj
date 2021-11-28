@@ -71,27 +71,37 @@ impl std::cmp::PartialEq for Primitive {
 
 pub const MINUS: Primitive = Primitive("-", negate);
 
-fn negate(y: &Noun) -> Result<Noun> {
+/// If the noun is an atom, apply the function to it. Otherwise, apply it to every element of the
+/// array to produce a new array of equal shape.
+// TODO: Run this automatically depending on the rank of the verb?
+fn monad_per_atom(y: &Noun, f: fn(&Atom) -> Result<Atom>) -> Result<Noun> {
     match y {
-        // TODO: Abstract element-at-a-time etc. This shouldn't need special cases for one
-        // number vs many.
-        Noun::Atom(Atom::Complex(a)) => Ok(Noun::Atom(Atom::Complex(-a))),
-        Noun::Array(array) => Ok(Noun::Array(
-            array
-                .iter()
-                .map(|Atom::Complex(c)| Atom::Complex(-c))
-                .collect(),
-        )),
+        Noun::Atom(a) => f(a).map(Noun::Atom),
+        Noun::Array(array) => Ok(Noun::Array(Array::from_vec(
+            array.iter().map(f).collect::<Result<Vec<Atom>>>()?,
+        ))),
+    }
+}
+
+fn negate(y: &Noun) -> Result<Noun> {
+    monad_per_atom(y, negate_atom)
+}
+
+fn negate_atom(y: &Atom) -> Result<Atom> {
+    match y {
+        Atom::Complex(a) => Ok(Atom::Complex(-a)),
     }
 }
 
 pub const MINUS_DOT: Primitive = Primitive("-.", not);
 
 fn not(y: &Noun) -> Result<Noun> {
+    monad_per_atom(y, not_atom)
+}
+
+fn not_atom(y: &Atom) -> Result<Atom> {
     match y {
-        // TODO: Abstract element-at-a-time etc. This shouldn't need special cases for one
-        // number vs many.
-        Noun::Atom(Atom::Complex(a)) => {
+        Atom::Complex(a) => {
             if a.im != 0.0 {
                 todo!()
             } else if a.re == 0.0 {
@@ -102,9 +112,8 @@ fn not(y: &Noun) -> Result<Noun> {
                 todo!()
             }
         }
-        Noun::Array(_) => todo!(),
     }
 }
 
 /// All primitive verbs.
-const PRIMITIVES: &[Primitive] = &[MINUS];
+const PRIMITIVES: &[Primitive] = &[MINUS, MINUS_DOT];
