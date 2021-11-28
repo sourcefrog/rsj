@@ -7,6 +7,7 @@
 pub enum Error {
     Unexpected(char),
     ParseNumber(num_complex::ParseComplexError<std::num::ParseFloatError>),
+    Domain,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

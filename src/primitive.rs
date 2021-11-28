@@ -11,7 +11,7 @@ use fmt::Formatter;
 
 use crate::array::Array;
 use crate::atom::Atom;
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::noun::Noun;
 use crate::verb::Verb;
 
@@ -88,17 +88,16 @@ fn not(y: &Noun) -> Result<Noun> {
 }
 
 fn not_atom(y: &Atom) -> Result<Atom> {
-    match y {
-        Atom::Complex(a) => {
-            if a.im != 0.0 {
-                todo!()
-            } else if a.re == 0.0 {
-                Ok(1.0.into())
-            } else if a.re == 1.0 {
-                Ok(0.0.into())
-            } else {
-                todo!()
-            }
-        }
+    let Atom::Complex(a) = y;
+    if a.im != 0.0 {
+        Err(Error::Domain)
+    } else if a.re == 0.0 {
+        Ok(1.0.into())
+    } else if a.re == 1.0 {
+        Ok(0.0.into())
+    } else if a.re > 0.0 && a.re < 1.0 {
+        Ok(Atom::from(1.0 - a))
+    } else {
+        Err(Error::Domain)
     }
 }
