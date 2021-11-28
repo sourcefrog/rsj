@@ -6,15 +6,15 @@ use std::fmt;
 
 use num_complex::Complex64;
 
-use crate::atom::{display_complex, Atom};
+use crate::atom::display_complex;
 
 /// Arrays potentially have n dimensions, although only 1-dimensional arrays are implemented now.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Array(pub Vec<Complex64>);
 
-impl Array {
-    pub fn from_vec(vec: Vec<Complex64>) -> Self {
-        Array(vec)
+impl From<Vec<Complex64>> for Array {
+    fn from(v: Vec<Complex64>) -> Array {
+        Array(v)
     }
 }
 

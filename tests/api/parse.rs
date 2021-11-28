@@ -85,7 +85,7 @@ fn no_underscore_inside_numbers() {
 fn several_numbers_in_one_word() {
     assert_eq!(
         parse("  1 2 3 _4.56 _99 __").unwrap().words(),
-        &[Word::Noun(Noun::matrix_from_vec(vec![
+        &[Word::Noun(Noun::from(vec![
             Complex64::new(1.0, 0.0),
             Complex64::new(2.0, 0.0),
             Complex64::new(3.0, 0.0),

@@ -80,7 +80,7 @@ impl Scan for Word {
         if numbers.len() == 1 {
             Ok(Some(Word::Noun(Noun::Atom(Atom::from(numbers[0])))))
         } else if !numbers.is_empty() {
-            Ok(Some(Word::Noun(Noun::matrix_from_vec(numbers))))
+            Ok(Some(Word::Noun(Noun::from(numbers))))
         } else if lex.is_end() {
             Ok(None)
         } else {
