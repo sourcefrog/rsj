@@ -11,12 +11,27 @@ use crate::atom::Atom;
 /// Arrays contain atoms.
 // TODO: Require that arrays contain homogenous atoms.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Array(pub Vec<Atom>);
+pub struct Array(Vec<Atom>);
 
 impl Array {
     /// Construct an array by taking ownership of a Vec of Atoms.
     pub fn from_vec(v: Vec<Atom>) -> Array {
         Array(v)
+    }
+
+    /// Iterate by-reference the atoms in the array.
+    pub fn iter<'a>(&'a self) -> impl Iterator<Item = &Atom> + 'a {
+        self.into_iter()
+    }
+}
+
+/// Iterate by-reference the elements of the array.
+impl<'a> IntoIterator for &'a Array {
+    type Item = &'a Atom;
+    type IntoIter = std::slice::Iter<'a, Atom>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
     }
 }
 
