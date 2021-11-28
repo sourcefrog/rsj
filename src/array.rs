@@ -20,7 +20,7 @@ impl Array {
     }
 
     /// Iterate by-reference the atoms in the array.
-    pub fn iter<'a>(&'a self) -> impl Iterator<Item = &Atom> + 'a {
+    pub fn iter_atoms<'a>(&'a self) -> impl Iterator<Item = &Atom> + 'a {
         self.into_iter()
     }
 }

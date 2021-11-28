@@ -22,6 +22,10 @@ pub struct Primitive(
     // dyad: fn(&Noun, &Noun) -> Result<Noun>,
 );
 
+// All implemented primitives.
+pub const MINUS: Primitive = Primitive("-", Monad::Zero(negate));
+pub const MINUS_DOT: Primitive = Primitive("-.", Monad::Zero(not));
+
 impl Verb for Primitive {
     fn display(&self) -> Cow<str> {
         Cow::Borrowed(self.0)
@@ -29,9 +33,7 @@ impl Verb for Primitive {
 
     fn monad(&self, y: &Noun) -> Result<Noun> {
         // TODO: Apply with the correct rank, etc.
-        match self.1 {
-            Monad::Zero(f) => monad_per_atom(y, f),
-        }
+        self.1.apply(y)
     }
 
     fn dyad(&self, _x: &Noun, _y: &Noun) -> Result<Noun> {
@@ -58,18 +60,6 @@ impl std::cmp::PartialEq for Primitive {
     }
 }
 
-/// If the noun is an atom, apply the function to it. Otherwise, apply it to every element of the
-/// array to produce a new array of equal shape.
-// TODO: Run this automatically depending on the rank of the verb?
-fn monad_per_atom(y: &Noun, f: fn(&Atom) -> Result<Atom>) -> Result<Noun> {
-    match y {
-        Noun::Atom(a) => f(a).map(Noun::Atom),
-        Noun::Array(array) => Ok(Noun::Array(Array::from_vec(
-            array.iter().map(f).collect::<Result<Vec<Atom>>>()?,
-        ))),
-    }
-}
-
 /// A primitive monad implementation which is applicable at one of several possible ranks.
 enum Monad {
     /// A monad that applies per-atom.
@@ -77,15 +67,25 @@ enum Monad {
     // TODO: One, Two, Infinite
 }
 
-pub const MINUS: Primitive = Primitive("-", Monad::Zero(negate));
+impl Monad {
+    /// Apply this monad to the y noun, at the appropriate rank.
+    fn apply(&self, y: &Noun) -> Result<Noun> {
+        match self {
+            Monad::Zero(f) => match y {
+                Noun::Atom(a) => f(a).map(Noun::Atom),
+                Noun::Array(array) => Ok(Noun::Array(Array::from_vec(
+                    array.iter_atoms().map(f).collect::<Result<Vec<Atom>>>()?,
+                ))),
+            },
+        }
+    }
+}
 
 fn negate(y: &Atom) -> Result<Atom> {
     match y {
         Atom::Complex(a) => Ok(Atom::Complex(-a)),
     }
 }
-
-pub const MINUS_DOT: Primitive = Primitive("-.", Monad::Zero(not));
 
 fn not(y: &Atom) -> Result<Atom> {
     let Atom::Complex(a) = y;
