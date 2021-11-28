@@ -9,11 +9,12 @@ use std::fmt;
 
 use fmt::Formatter;
 
+use crate::atom::Atom;
 use crate::error::Result;
 use crate::noun::{Matrix, Noun};
 use crate::verb::Verb;
 
-/// A builtin verb.
+/// A builtin primitive verb, such as `-` or `<.`.
 #[derive(Clone)]
 pub struct Primitive(
     &'static str,
@@ -73,7 +74,7 @@ fn negate(y: &Noun) -> Result<Noun> {
     match y {
         // TODO: Abstract element-at-a-time etc. This shouldn't need special cases for one
         // number vs many.
-        Noun::Number(a) => Ok(Noun::Number(-a)),
+        Noun::Atom(Atom::Complex(a)) => Ok(Noun::Atom(Atom::Complex(-a))),
         Noun::Matrix(Matrix(v)) => Ok(Noun::Matrix(Matrix(v.iter().map(|a| -a).collect()))),
     }
 }
@@ -84,7 +85,7 @@ fn not(y: &Noun) -> Result<Noun> {
     match y {
         // TODO: Abstract element-at-a-time etc. This shouldn't need special cases for one
         // number vs many.
-        Noun::Number(a) => {
+        Noun::Atom(Atom::Complex(a)) => {
             if a.im != 0.0 {
                 todo!()
             } else if a.re == 0.0 {

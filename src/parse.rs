@@ -13,6 +13,7 @@ use std::str::FromStr;
 
 use num_complex::Complex64;
 
+use crate::atom::Atom;
 use crate::error::{Error, Result};
 use crate::lex::Lex;
 use crate::noun::Noun;
@@ -67,7 +68,7 @@ impl Scan for Word {
             return Ok(Some(Word::Verb(&primitive::MINUS)));
         }
         // Take as many contiguous numbers as we can as one list-of-numbers "word".
-        let mut numbers = Vec::new();
+        let mut numbers: Vec<Complex64> = Vec::new();
         loop {
             lex.drop_whitespace();
             if let Some(number) = Complex64::scan(lex)? {
@@ -77,7 +78,7 @@ impl Scan for Word {
             }
         }
         if numbers.len() == 1 {
-            Ok(Some(Word::Noun(Noun::Number(numbers[0]))))
+            Ok(Some(Word::Noun(Noun::Atom(Atom::from(numbers[0])))))
         } else if !numbers.is_empty() {
             Ok(Some(Word::Noun(Noun::matrix_from_vec(numbers))))
         } else if lex.is_end() {
