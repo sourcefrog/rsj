@@ -13,7 +13,7 @@ use rsj::array::Array;
 use rsj::error::Error;
 use rsj::noun::Noun;
 use rsj::parse::parse;
-use rsj::primitive::Primitive;
+use rsj::primitive;
 use rsj::word::Word;
 
 #[test]
@@ -70,7 +70,7 @@ fn infinities() {
 
 #[test]
 fn primitive() {
-    let minus = Primitive::lookup("-").unwrap();
+    let minus = &primitive::MINUS;
     assert_eq!(
         parse(" - -").unwrap().words(),
         &[Word::Verb(minus), Word::Verb(minus),]

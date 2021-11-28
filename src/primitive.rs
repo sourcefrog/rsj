@@ -23,18 +23,6 @@ pub struct Primitive(
     // dyad: fn(&Noun, &Noun) -> Result<Noun>,
 );
 
-impl Primitive {
-    /// Lookup a single-character primitive verb.
-    pub fn lookup_single(name: char) -> Option<&'static Primitive> {
-        Primitive::lookup(&name.to_string())
-    }
-
-    /// Lookup an primitive verb by name.
-    pub fn lookup(name: &str) -> Option<&'static Primitive> {
-        PRIMITIVES.iter().find(|i| i.0 == name)
-    }
-}
-
 impl Verb for Primitive {
     fn display(&self) -> Cow<str> {
         Cow::Borrowed(self.0)
@@ -114,6 +102,3 @@ fn not_atom(y: &Atom) -> Result<Atom> {
         }
     }
 }
-
-/// All primitive verbs.
-const PRIMITIVES: &[Primitive] = &[MINUS, MINUS_DOT];
