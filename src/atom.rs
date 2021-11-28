@@ -2,6 +2,7 @@
 
 //! Nouns (J objects.)
 
+use std::convert::TryInto;
 use std::fmt::{self, Write};
 
 use num_complex::Complex64;
@@ -27,6 +28,13 @@ impl From<&Complex64> for Atom {
 impl From<Complex64> for Atom {
     fn from(v: Complex64) -> Self {
         Atom::Complex(v)
+    }
+}
+
+impl From<usize> for Atom {
+    fn from(v: usize) -> Self {
+        let a: u32 = v.try_into().unwrap();
+        Atom::Complex(Complex64::new(a.into(), 0.0))
     }
 }
 

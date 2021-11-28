@@ -25,6 +25,7 @@ pub struct Primitive(
 // All implemented primitives.
 pub const MINUS: Primitive = Primitive("-", Monad::Zero(negate));
 pub const MINUS_DOT: Primitive = Primitive("-.", Monad::Zero(not));
+pub const NUMBER: Primitive = Primitive("#", Monad::Infinite(tally));
 
 impl Verb for Primitive {
     fn display(&self) -> Cow<str> {
@@ -32,7 +33,6 @@ impl Verb for Primitive {
     }
 
     fn monad(&self, y: &Noun) -> Result<Noun> {
-        // TODO: Apply with the correct rank, etc.
         self.1.apply(y)
     }
 
@@ -64,7 +64,8 @@ impl std::cmp::PartialEq for Primitive {
 enum Monad {
     /// A monad that applies per-atom.
     Zero(fn(&Atom) -> Result<Atom>),
-    // TODO: One, Two, Infinite
+    Infinite(fn(&Noun) -> Result<Noun>),
+    // TODO: One, Two, ...
 }
 
 impl Monad {
@@ -77,6 +78,7 @@ impl Monad {
                     array.iter_atoms().map(f).collect::<Result<Vec<Atom>>>()?,
                 ))),
             },
+            Monad::Infinite(f) => f(y),
         }
     }
 }
@@ -99,5 +101,13 @@ fn not(y: &Atom) -> Result<Atom> {
         Ok(Atom::from(1.0 - a))
     } else {
         Err(Error::Domain)
+    }
+}
+
+/// Count the items in y.
+fn tally(y: &Noun) -> Result<Noun> {
+    match y {
+        Noun::Atom(_) => Ok(Noun::Atom(1.into())),
+        Noun::Array(a) => Ok(Noun::Atom(a.number_items().into())),
     }
 }

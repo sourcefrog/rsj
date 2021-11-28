@@ -23,6 +23,14 @@ impl Array {
     pub fn iter_atoms<'a>(&'a self) -> impl Iterator<Item = &Atom> + 'a {
         self.into_iter()
     }
+
+    /// Return the number of _items_ in the array: the cells whose rank is one lower than the rank of the
+    /// array.
+    ///
+    /// Since only 1d arrays are supported at the moment this is just the atoms.
+    pub fn number_items(&self) -> usize {
+        self.0.len()
+    }
 }
 
 /// Iterate by-reference the elements of the array.
