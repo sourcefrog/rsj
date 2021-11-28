@@ -2,6 +2,7 @@
 
 //! Toy implementation of J in Rust.
 
+pub mod array;
 pub mod atom;
 pub mod error;
 pub mod eval;

@@ -6,17 +6,18 @@ use std::fmt;
 
 use num_complex::Complex64;
 
-use crate::atom::{display_complex, Atom};
+use crate::array::Array;
+use crate::atom::Atom;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Noun {
     Atom(Atom),
-    Matrix(Matrix),
+    Array(Array),
 }
 
 impl Noun {
     pub fn matrix_from_vec(vec: Vec<Complex64>) -> Noun {
-        Noun::Matrix(Matrix::from_vec(vec))
+        Noun::Array(Array::from_vec(vec))
     }
 }
 
@@ -36,28 +37,7 @@ impl fmt::Display for Noun {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Noun::Atom(a) => write!(f, "{}", a),
-            Noun::Matrix(m) => write!(f, "{}", m),
+            Noun::Array(m) => write!(f, "{}", m),
         }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Matrix(pub Vec<Complex64>);
-
-impl Matrix {
-    pub fn from_vec(vec: Vec<Complex64>) -> Self {
-        Matrix(vec)
-    }
-}
-
-impl fmt::Display for Matrix {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (i, &n) in self.0.iter().enumerate() {
-            if i > 0 {
-                write!(f, " ")?;
-            }
-            display_complex(n, f)?;
-        }
-        Ok(())
     }
 }

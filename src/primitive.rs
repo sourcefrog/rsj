@@ -9,9 +9,10 @@ use std::fmt;
 
 use fmt::Formatter;
 
+use crate::array::Array;
 use crate::atom::Atom;
 use crate::error::Result;
-use crate::noun::{Matrix, Noun};
+use crate::noun::Noun;
 use crate::verb::Verb;
 
 /// A builtin primitive verb, such as `-` or `<.`.
@@ -75,7 +76,7 @@ fn negate(y: &Noun) -> Result<Noun> {
         // TODO: Abstract element-at-a-time etc. This shouldn't need special cases for one
         // number vs many.
         Noun::Atom(Atom::Complex(a)) => Ok(Noun::Atom(Atom::Complex(-a))),
-        Noun::Matrix(Matrix(v)) => Ok(Noun::Matrix(Matrix(v.iter().map(|a| -a).collect()))),
+        Noun::Array(Array(v)) => Ok(Noun::Array(Array(v.iter().map(|a| -a).collect()))),
     }
 }
 
@@ -96,7 +97,7 @@ fn not(y: &Noun) -> Result<Noun> {
                 todo!()
             }
         }
-        Noun::Matrix(_) => todo!(),
+        Noun::Array(_) => todo!(),
     }
 }
 
