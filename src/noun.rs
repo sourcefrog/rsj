@@ -15,6 +15,12 @@ pub enum Noun {
     Array(Array),
 }
 
+impl From<Atom> for Noun {
+    fn from(atom: Atom) -> Noun {
+        Noun::Atom(atom)
+    }
+}
+
 impl From<Vec<Atom>> for Noun {
     fn from(vec: Vec<Atom>) -> Noun {
         Noun::Array(Array::from(vec))
