@@ -59,6 +59,12 @@ pub enum Word {
     Verb(&'static Primitive),
 }
 
+impl From<Noun> for Word {
+    fn from(n: Noun) -> Word {
+        Word::Noun(n)
+    }
+}
+
 impl fmt::Display for Word {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
