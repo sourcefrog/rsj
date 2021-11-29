@@ -2,7 +2,7 @@
 
 //! Evaluate sentences.
 
-use crate::error::Result;
+use crate::error::{Result, Error};
 use crate::parse::parse;
 use crate::verb::Verb;
 use crate::word::{Sentence, Word};
@@ -44,8 +44,12 @@ impl Session {
                 }
             }
         }
-        // TODO: Can this ever return a partly-undigested stack of more than 1 word?
-        assert!(stack.len() <= 1);
-        Ok(Sentence::from_vec(stack))
+        // If the stack wasn't reduced to a single word that's probably 
+        // because it contains some grammar we don't support yet...?
+        if stack.len() > 1 {
+            Err(Error::Unimplemented)
+        } else {
+            Ok(Sentence::from_vec(stack))
+        }
     }
 }
