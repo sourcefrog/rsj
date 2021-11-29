@@ -16,16 +16,12 @@ use crate::noun::Noun;
 use crate::verb::Verb;
 
 /// A builtin primitive verb, such as `-` or `<.`.
-pub struct Primitive(
-    &'static str,
-    Monad,
-    // dyad: fn(&Noun, &Noun) -> Result<Noun>,
-);
+pub struct Primitive(&'static str, Monad, Dyad);
 
 // All implemented primitives.
-pub const MINUS: Primitive = Primitive("-", Monad::Zero(negate));
-pub const MINUS_DOT: Primitive = Primitive("-.", Monad::Zero(not));
-pub const NUMBER: Primitive = Primitive("#", Monad::Infinite(tally));
+pub const MINUS: Primitive = Primitive("-", Monad::Zero(negate), Dyad::Zero(minus));
+pub const MINUS_DOT: Primitive = Primitive("-.", Monad::Zero(not), Dyad::Unimplemented);
+pub const NUMBER: Primitive = Primitive("#", Monad::Infinite(tally), Dyad::Unimplemented);
 
 impl Verb for Primitive {
     fn display(&self) -> Cow<str> {
@@ -36,9 +32,8 @@ impl Verb for Primitive {
         self.1.apply(y)
     }
 
-    fn dyad(&self, _x: &Noun, _y: &Noun) -> Result<Noun> {
-        //     self.dyad(x, y)
-        todo!();
+    fn dyad(&self, x: &Noun, y: &Noun) -> Result<Noun> {
+        self.2.apply(x, y)
     }
 }
 
@@ -83,10 +78,35 @@ impl Monad {
     }
 }
 
+/// A primitive verb applicable at various ranks.
+enum Dyad {
+    /// Per atom on both sides (0, 0).
+    Zero(fn(&Atom, &Atom) -> Result<Atom>),
+    Unimplemented,
+}
+
+impl Dyad {
+    fn apply(&self, x: &Noun, y: &Noun) -> Result<Noun> {
+        match self {
+            Dyad::Zero(f) => match (x, y) {
+                (Noun::Atom(ax), Noun::Atom(ay)) => f(ax, ay).map(Noun::from),
+                _ => todo!("Dyad::apply on one or two arrays"),
+            },
+            &Dyad::Unimplemented => Err(Error::Unimplemented),
+        }
+    }
+}
+
 fn negate(y: &Atom) -> Result<Atom> {
     match y {
         Atom::Complex(a) => Ok(Atom::Complex(-a)),
     }
+}
+
+fn minus(x: &Atom, y: &Atom) -> Result<Atom> {
+    let Atom::Complex(x) = x;
+    let Atom::Complex(y) = y;
+    Ok(Atom::Complex(x - y))
 }
 
 fn not(y: &Atom) -> Result<Atom> {

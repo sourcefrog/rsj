@@ -2,7 +2,7 @@
 
 //! Evaluate sentences.
 
-use crate::error::{Result, Error};
+use crate::error::{Error, Result};
 use crate::parse::parse;
 use crate::verb::Verb;
 use crate::word::{Sentence, Word};
@@ -19,7 +19,7 @@ impl Session {
     /// Evaluate one line (as text) and return the result (as text).
     pub fn eval_text(&self, line: &str) -> String {
         match parse(line).and_then(|s| self.eval_sentence(&s)) {
-            Ok(word) => format!("{}", word),
+            Ok(sentence) => format!("{}", sentence),
             Err(err) => format!("error: {:?}", err),
         }
     }
@@ -28,23 +28,30 @@ impl Session {
     pub fn eval_sentence(&self, sentence: &Sentence) -> Result<Sentence> {
         // Evaluation proceeds from right to left, looking for patterns that can be evaluated
         // and reduced.
+        //
+        // See https://www.jsoftware.com/help/dictionary/dicte.htm.
         let mut stack: Vec<Word> = sentence.words().to_vec();
         // We're currently trying to evaluate stack[cursor..(cursor+4)].
         for cursor in (0..(stack.len())).rev() {
             // dbg!(&stack);
-            if stack.len() - cursor >= 2 {
-                // TODO: Just seeing `VERB NOUN` is not enough to evaluate the verb monadically,
-                // because there might be more nouns to the left. We should wait, unless this is
-                // the left-hand end of the input...
-                if let Word::Verb(v) = &stack[cursor] {
-                    if let Word::Noun(y) = &stack[cursor + 1] {
-                        stack[cursor] = Word::Noun(v.monad(y)?);
-                        stack.remove(cursor + 1);
-                    }
+            if stack.len() - cursor < 2 {
+                continue; // not enough to make progress
+            }
+            if cursor == 0 || matches!(stack[cursor - 1], Word::Verb(..)) {
+                // TODO: Parens and assignment should also match here.
+                if let [Word::Verb(v), Word::Noun(y), ..] = &stack[cursor..] {
+                    stack[cursor] = Word::Noun(v.monad(y)?);
+                    stack.remove(cursor + 1);
+                    // TODO: Maybe try again at the same cursor position?
                 }
             }
+            if let [Word::Noun(x), Word::Verb(v), Word::Noun(y), ..] = &stack[cursor..] {
+                stack[cursor] = Word::Noun(v.dyad(&x, &y)?);
+                stack.remove(cursor + 1);
+                stack.remove(cursor + 1);
+            }
         }
-        // If the stack wasn't reduced to a single word that's probably 
+        // If the stack wasn't reduced to a single word that's probably
         // because it contains some grammar we don't support yet...?
         if stack.len() > 1 {
             Err(Error::Unimplemented)
