@@ -107,8 +107,8 @@ impl Scan for Complex64 {
                         lex.take();
                         num_str.push(c);
                     }
-                    ' ' | '\n' | '\r' | '\t' => break,
-                    c => return Err(Error::Unexpected(c as char)),
+                    c if c.is_ascii_alphabetic() => return Err(Error::Unexpected(c)),
+                    _ => break,
                 }
             }
             let number = if num_str == "_" {

@@ -16,3 +16,5 @@ __
 0
              42
 42
+   69xy
+error: Unexpected('x')
