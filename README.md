@@ -23,3 +23,45 @@ fascinating programming language descended from APL:
 * Verbs can be composed with *adverbs* or *conjunctions* to use new verbs.
 
 I thought it would be fun to understand J better by writing an interpreter in Rust.
+
+## Supported features
+
+Only floating-point numbers and 1-dimensional arrays of numbers are implemented so far.
+(They're actually complex numbers internally but there is no syntax to create complex
+numbers yet.)
+
+Monadic and dyadic verb application.
+
+Verbs:
+
+* `-` (minus, negative)
+* `-.` (not)
+* `#` (tally)
+
+For examples see the `t/` directory: the lines indented by three spaces are the input 
+and the unindented lines are the expected output. These are all checked by `cargo test`.
+
+## Goals
+
+* Be reasonably faithful to the J specification: this is an implementation of J,
+  not just a J-inspired language. But, it's not necessary to produce precisely 
+  byte-for-byte identical output especially with regard to formatting floats and
+  error messages.
+  
+* Run all examples from the J documentation and tutorials for the features that
+  are implemented.
+  
+* Embrace its terseness and archaic feeling e.g. in error messages and interpreter
+  prompts.
+
+* But also add some modern conveniences that don't impinge on the core experience,
+  e.g. readline editing.
+  
+* Support a kind of literate programming by running examples from inside Markdown
+  docs (not supported yet) or `.ijs` files.
+  
+* Maybe, support a notebook interface.
+  
+* Write clean idiomatic Rust. Understand a good mapping from J types to Rust types.
+
+* Never panic.
