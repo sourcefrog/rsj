@@ -7,6 +7,7 @@ pub mod atom;
 pub mod error;
 pub mod eval;
 pub mod lex;
+pub mod markdown;
 pub mod noun;
 pub mod parse;
 pub mod primitive;

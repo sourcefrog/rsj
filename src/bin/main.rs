@@ -2,6 +2,27 @@
 
 //! Toy J interpreter: main program.
 
-fn main() {
-    rsj::repl::repl();
+use std::path::PathBuf;
+
+use argh::FromArgs;
+
+#[derive(FromArgs)]
+#[argh(description = "J language interpreter")]
+struct Args {
+    #[argh(
+        option,
+        short = 'M',
+        description = "read and update J examples in Markdown file"
+    )]
+    update_markdown: Option<PathBuf>,
+}
+
+fn main() -> rsj::error::Result<()> {
+    let args: Args = argh::from_env();
+    if let Some(markdown_path) = args.update_markdown {
+        rsj::markdown::update_file(&markdown_path)
+    } else {
+        rsj::repl::repl();
+        Ok(())
+    }
 }
