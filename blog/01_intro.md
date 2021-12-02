@@ -13,3 +13,8 @@ A very simple expression is simply a number:
    7
 7
 ```
+
+Here's some J text as an indented block:
+
+       7 + 3
+    10
