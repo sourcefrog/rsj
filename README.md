@@ -43,6 +43,8 @@ and the unindented lines are the expected output. These are all checked by `carg
 
 ## Goals
 
+* Be able to run any solutions I can write to Advent of Code.
+
 * Be reasonably faithful to the J specification: this is an implementation of J,
   not just a J-inspired language. But, it's not necessary to produce precisely 
   byte-for-byte identical output especially with regard to formatting floats and
@@ -65,3 +67,8 @@ and the unindented lines are the expected output. These are all checked by `carg
 * Write clean idiomatic Rust. Understand a good mapping from J types to Rust types.
 
 * Never panic.
+
+## Background reading
+
+* [An Implementation of J](https://www.jsoftware.com/books/pdf/aioj.pdf), by
+  Roger Hui, describes the original implementation.
