@@ -13,12 +13,17 @@ const PROMPT: &str = "   ";
 const EXAMPLE_DIR: &str = "t";
 
 #[test]
-fn examples() {
+fn examples_j() {
     let dir = Path::new(EXAMPLE_DIR);
-    for entry in fs::read_dir(dir).unwrap().map(Result::unwrap) {
-        let example_path = dir.join(entry.file_name());
-        println!("** {:?}", example_path);
-        test_one_example(&example_path);
+    for path in fs::read_dir(dir)
+        .unwrap()
+        .map(Result::unwrap)
+        .map(|de| de.path())
+    {
+        if path.extension().and_then(|e| e.to_str()) == Some("ijs") {
+            println!("** {:?}", path);
+            test_one_example(&path);
+        }
     }
 }
 
