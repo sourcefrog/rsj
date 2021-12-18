@@ -12,6 +12,7 @@ pub mod noun;
 pub mod parse;
 pub mod primitive;
 pub mod repl;
+pub mod transcript;
 pub mod verb;
 pub mod word;
 

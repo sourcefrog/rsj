@@ -6,14 +6,26 @@ use std::path::Path;
 
 use pulldown_cmark::{CodeBlockKind, CowStr, Event, Tag};
 
-use crate::error::{Error, Result};
+use crate::error::Result;
+use crate::eval::Session;
+use crate::transcript;
 
 /// Extract J input and output from Markdown; run the commands; update the file to reflect their
 /// output.
 pub fn update_file(markdown_path: &Path) -> Result<()> {
     let markdown = std::fs::read_to_string(&markdown_path)?;
     let literate = Literate::parse(&markdown)?;
-    print!("{}", literate.extract_transcript()?);
+    let mut output = String::new();
+    let mut session = Session::new();
+    for chunk in &literate.chunks {
+        match chunk {
+            Chunk::J(j, _) => {
+                output.push_str(&reinsert_indents(&transcript::rerun(&mut session, j)?))
+            }
+            Chunk::Other(md) => output.push_str(md),
+        }
+    }
+    print!("{}", output);
     // TODO: Actually run the examples; collect output; write out.
     Ok(())
 }
@@ -26,7 +38,7 @@ pub fn extract_transcript(markdown_path: &Path) -> Result<String> {
 /// A section of a markdown file.
 enum Chunk<'markdown> {
     /// A chunk of J input and output lines, left-aligned.
-    JExample(String, CodeBlockKind<'markdown>),
+    J(String, CodeBlockKind<'markdown>),
     /// Any other markdown text.
     Other(&'markdown str),
 }
@@ -69,10 +81,7 @@ impl<'markdown> Literate<'markdown> {
                     }
                 }
                 Event::End(Tag::CodeBlock(_)) => {
-                    chunks.push(Chunk::JExample(
-                        current_code.concat(),
-                        in_j_block.take().unwrap(),
-                    ));
+                    chunks.push(Chunk::J(current_code.concat(), in_j_block.take().unwrap()));
                     current_code.clear();
                     prev = range.end;
                 }
@@ -94,7 +103,7 @@ impl<'markdown> Literate<'markdown> {
     fn extract_transcript(&self) -> Result<String> {
         let mut s = String::new();
         for chunk in &self.chunks {
-            if let Chunk::JExample(example, _) = chunk {
+            if let Chunk::J(example, _) = chunk {
                 s.push_str(example)
             }
         }
@@ -104,12 +113,13 @@ impl<'markdown> Literate<'markdown> {
     /// Reassemble text and examples into a Markdown doc.
     ///
     /// If all the examples are up-to-date this should recreate the input exactly.
+    #[allow(unused)]
     fn reassemble(&self) -> String {
         let mut s = String::new();
         for c in &self.chunks {
             match c {
                 Chunk::Other(text) => s.push_str(text),
-                Chunk::JExample(text, kind) => {
+                Chunk::J(text, kind) => {
                     // TODO: Re-insert fences or indents.
                     match kind {
                         // TODO: This might be wrong if it's indented more than one level.
@@ -164,11 +174,11 @@ And closing text.
         let examples: Vec<&Chunk> = literate
             .chunks
             .iter()
-            .filter(|i| matches!(i, Chunk::JExample(_, _)))
+            .filter(|i| matches!(i, Chunk::J(_, _)))
             .collect();
         assert_eq!(examples.len(), 1);
         match &examples[0] {
-            &Chunk::JExample(text, kind) => {
+            &Chunk::J(text, kind) => {
                 assert_eq!(*kind, CodeBlockKind::Indented);
                 assert_eq!(
                     text, &"   3 + 4\n7\n",

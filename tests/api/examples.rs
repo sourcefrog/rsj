@@ -23,7 +23,7 @@ fn examples() {
 }
 
 fn test_one_example(path: &Path) {
-    let session = Session::new();
+    let mut session = Session::new();
     let body = fs::read_to_string(path).unwrap();
     let mut lines = body.lines();
     while let Some(input) = lines.next() {

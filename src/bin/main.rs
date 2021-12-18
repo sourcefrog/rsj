@@ -11,10 +11,10 @@ use argh::FromArgs;
 struct Args {
     #[argh(
         option,
-        short = 'M',
+        short = 'D',
         description = "read and update J examples in Markdown file"
     )]
-    update_markdown: Option<PathBuf>,
+    diff_markdown: Option<PathBuf>,
 
     #[argh(
         option,
@@ -25,9 +25,8 @@ struct Args {
 
 fn main() -> rsj::error::Result<()> {
     let args: Args = argh::from_env();
-    if let Some(_markdown_path) = args.update_markdown {
-        // rsj::markdown::update_file(&markdown_path)
-        todo!()
+    if let Some(markdown_path) = args.diff_markdown {
+        rsj::markdown::update_file(&markdown_path)?;
     } else if let Some(markdown_path) = args.extract_transcript {
         print!("{}", rsj::markdown::extract_transcript(&markdown_path)?);
     } else {

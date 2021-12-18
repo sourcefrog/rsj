@@ -12,7 +12,7 @@ const PROMPT: &str = "   ";
 /// Read and evaluate input from stdin until stopped by ^c or ^d.
 pub fn repl() {
     let mut rl = Editor::<()>::new();
-    let session = Session::new();
+    let mut session = Session::new();
     loop {
         match rl.readline(PROMPT) {
             Ok(line) => {

@@ -17,7 +17,7 @@ impl Session {
     }
 
     /// Evaluate one line (as text) and return the result (as text).
-    pub fn eval_text(&self, line: &str) -> String {
+    pub fn eval_text(&mut self, line: &str) -> String {
         match parse(line).and_then(|s| self.eval_sentence(&s)) {
             Ok(sentence) => format!("{}", sentence),
             Err(err) => format!("error: {:?}", err),
@@ -25,7 +25,7 @@ impl Session {
     }
 
     /// Evaluate a parsed sentence and return the result.
-    pub fn eval_sentence(&self, sentence: &Sentence) -> Result<Sentence> {
+    pub fn eval_sentence(&mut self, sentence: &Sentence) -> Result<Sentence> {
         // Evaluation proceeds from right to left, looking for patterns that can be evaluated
         // and reduced.
         //
