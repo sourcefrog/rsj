@@ -11,22 +11,16 @@ use crate::error::{Error, Result};
 /// Extract J input and output from Markdown; run the commands; update the file to reflect their
 /// output.
 pub fn update_file(markdown_path: &Path) -> Result<()> {
-    let markdown = std::fs::read_to_string(&markdown_path).map_err(Error::IoError)?;
-    let literate = Literate::from_str(&markdown)?;
-    for chunk in literate.chunks {
-        if let Chunk::JExample(example, _) = chunk {
-            print!("{}", example);
-        }
-    }
+    let markdown = std::fs::read_to_string(&markdown_path)?;
+    let literate = Literate::parse(&markdown)?;
+    print!("{}", literate.extract_transcript()?);
     // TODO: Actually run the examples; collect output; write out.
     Ok(())
 }
 
-/// A parsed Markdown file containing J examples.
-///
-/// The lifetime is bounded by a markdown source string held externally.
-pub struct Literate<'markdown> {
-    chunks: Vec<Chunk<'markdown>>,
+pub fn extract_transcript(markdown_path: &Path) -> Result<String> {
+    let markdown = std::fs::read_to_string(&markdown_path)?;
+    Literate::parse(&markdown)?.extract_transcript()
 }
 
 /// A section of a markdown file.
@@ -37,16 +31,11 @@ enum Chunk<'markdown> {
     Other(&'markdown str),
 }
 
-fn reinsert_indents(ijs: &str) -> String {
-    let mut s = String::new();
-    for (i, l) in ijs.lines().enumerate() {
-        if i > 0 {
-            s.push_str("    ");
-        }
-        s.push_str(l);
-        s.push('\n');
-    }
-    s
+/// A parsed Markdown file containing J examples.
+///
+/// The lifetime is bounded by a markdown source string held externally.
+struct Literate<'markdown> {
+    chunks: Vec<Chunk<'markdown>>,
 }
 
 impl<'markdown> Literate<'markdown> {
@@ -56,18 +45,18 @@ impl<'markdown> Literate<'markdown> {
     /// The resulting Chunks, when concatenated, should exactly reproduce the markdown input.
     ///
     /// This is not exactly std::str::FromStr because it keeps pointers into the input.
-    fn from_str(markdown: &'markdown str) -> Result<Literate<'markdown>> {
+    fn parse(md: &'markdown str) -> Result<Literate<'markdown>> {
         // The parser events don't account for 100% of input bytes, but we do want to exactly
         // reproduce the input, assuming the J output already has the right values.
         // Therefore, rather than concatenating all the tags, we specifically mark
         // out hunks for J text, and everything in between them counts as Other.
-        let parser = pulldown_cmark::Parser::new(markdown);
-        let mut chunks = Vec::new();
+        let parser = pulldown_cmark::Parser::new(md);
         let mut in_j_block = None;
         // Everything in markdown[..prev] has already been moved into chunks...
         let mut prev: usize = 0;
         // All the text in the currently incomplete J code block.
         let mut current_code: Vec<CowStr> = Vec::new();
+        let mut chunks = Vec::new();
         for (event, range) in parser.into_offset_iter() {
             // println!("{:?} at {:?}", event, range);
             match event {
@@ -76,7 +65,7 @@ impl<'markdown> Literate<'markdown> {
                     assert!(in_j_block.is_none(), "nested code blocks?");
                     in_j_block = Some(kind);
                     if range.start > prev {
-                        chunks.push(Chunk::Other(&markdown[prev..range.start]));
+                        chunks.push(Chunk::Other(&md[prev..range.start]));
                     }
                 }
                 Event::End(Tag::CodeBlock(_)) => {
@@ -95,10 +84,21 @@ impl<'markdown> Literate<'markdown> {
         }
         assert!(in_j_block.is_none());
         assert!(current_code.is_empty());
-        if prev < markdown.len() {
-            chunks.push(Chunk::Other(&markdown[prev..]));
+        if prev < md.len() {
+            chunks.push(Chunk::Other(&md[prev..]));
         }
         Ok(Literate { chunks })
+    }
+
+    /// Return the J transcript of all the examples.
+    fn extract_transcript(&self) -> Result<String> {
+        let mut s = String::new();
+        for chunk in &self.chunks {
+            if let Chunk::JExample(example, _) = chunk {
+                s.push_str(example)
+            }
+        }
+        Ok(s)
     }
 
     /// Reassemble text and examples into a Markdown doc.
@@ -112,6 +112,7 @@ impl<'markdown> Literate<'markdown> {
                 Chunk::JExample(text, kind) => {
                     // TODO: Re-insert fences or indents.
                     match kind {
+                        // TODO: This might be wrong if it's indented more than one level.
                         CodeBlockKind::Indented => {
                             s.push_str(&reinsert_indents(text));
                         }
@@ -122,6 +123,18 @@ impl<'markdown> Literate<'markdown> {
         }
         s
     }
+}
+
+fn reinsert_indents(ijs: &str) -> String {
+    let mut s = String::new();
+    for (i, l) in ijs.lines().enumerate() {
+        if i > 0 {
+            s.push_str("    ");
+        }
+        s.push_str(l);
+        s.push('\n');
+    }
+    s
 }
 
 #[cfg(test)]
@@ -142,7 +155,7 @@ And closing text.
 
     #[test]
     fn extract_and_recombine_examples() {
-        let literate = Literate::from_str(MD).unwrap();
+        let literate = Literate::parse(MD).unwrap();
         assert_eq!(
             &literate.reassemble(),
             MD,
@@ -164,5 +177,11 @@ And closing text.
             }
             _ => panic!(),
         }
+        assert_eq!(
+            literate.extract_transcript().unwrap(),
+            "   3 + 4
+7
+"
+        );
     }
 }
