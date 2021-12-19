@@ -16,5 +16,5 @@ A very simple expression is simply a number:
 
 Here's some J text as an indented block:
 
-       7 + 3
-    10
+       10 - 3
+    7
