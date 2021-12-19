@@ -12,7 +12,7 @@ struct Args {
     #[argh(
         option,
         short = 'D',
-        description = "read and update J examples in Markdown file"
+        description = "read and execute J fragments in Markdown file and show diff"
     )]
     diff_markdown: Option<PathBuf>,
 
@@ -26,7 +26,11 @@ struct Args {
 fn main() -> rsj::error::Result<()> {
     let args: Args = argh::from_env();
     if let Some(markdown_path) = args.diff_markdown {
-        rsj::markdown::update_file(&markdown_path)?;
+        let diff = rsj::markdown::diff_file(&markdown_path)?;
+        print!("{}", diff);
+        if !diff.is_empty() {
+            std::process::exit(1);
+        }
     } else if let Some(markdown_path) = args.extract_transcript {
         print!("{}", rsj::markdown::extract_transcript(&markdown_path)?);
     } else {

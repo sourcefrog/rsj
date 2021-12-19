@@ -5,14 +5,17 @@
 use std::path::Path;
 
 use pulldown_cmark::{CodeBlockKind, CowStr, Event, Tag};
+use similar::TextDiff;
 
 use crate::error::Result;
 use crate::eval::Session;
 use crate::transcript;
 
-/// Extract J input and output from Markdown; run the commands; update the file to reflect their
-/// output.
-pub fn update_file(markdown_path: &Path) -> Result<()> {
+/// Extract J input and output from Markdown; run the commands; return a diff
+/// reflecting differences in output.
+///
+/// If there are no differences the result is an empty string.
+pub fn diff_file(markdown_path: &Path) -> Result<String> {
     let markdown = std::fs::read_to_string(&markdown_path)?;
     let literate = Literate::parse(&markdown)?;
     let mut output = String::new();
@@ -25,9 +28,15 @@ pub fn update_file(markdown_path: &Path) -> Result<()> {
             Chunk::Other(md) => output.push_str(md),
         }
     }
-    print!("{}", output);
-    // TODO: Actually run the examples; collect output; write out.
-    Ok(())
+    let text_diff = TextDiff::from_lines(&markdown, &output);
+    // TODO: We could include timestamps here.
+    let old_name = format!("{}", markdown_path.display());
+    let new_name = format!("{}.new", markdown_path.display());
+    Ok(text_diff
+        .unified_diff()
+        .context_radius(8)
+        .header(&old_name, &new_name)
+        .to_string())
 }
 
 pub fn extract_transcript(markdown_path: &Path) -> Result<String> {
