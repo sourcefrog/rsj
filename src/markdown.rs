@@ -2,6 +2,7 @@
 
 //! Execute J code within code blocks in Markdown documents.
 
+use std::fmt::Write;
 use std::path::Path;
 
 use pulldown_cmark::{CodeBlockKind, CowStr, Event, Tag};
@@ -18,16 +19,8 @@ use crate::transcript;
 pub fn diff_file(markdown_path: &Path) -> Result<String> {
     let markdown = std::fs::read_to_string(&markdown_path)?;
     let literate = Literate::parse(&markdown)?;
-    let mut output = String::new();
     let mut session = Session::new();
-    for chunk in &literate.chunks {
-        match chunk {
-            Chunk::J(j, _) => {
-                output.push_str(&reinsert_indents(&transcript::rerun(&mut session, j)?))
-            }
-            Chunk::Other(md) => output.push_str(md),
-        }
-    }
+    let output = literate.run(&mut session)?;
     let text_diff = TextDiff::from_lines(&markdown, &output);
     // TODO: We could include timestamps here.
     let old_name = format!("{}", markdown_path.display());
@@ -119,6 +112,31 @@ impl<'markdown> Literate<'markdown> {
         Ok(s)
     }
 
+    /// Run all the examples and return the resulting reassembled document.
+    pub fn run(&self, session: &mut Session) -> Result<String> {
+        let mut output = String::new();
+        for chunk in &self.chunks {
+            match chunk {
+                Chunk::J(j, kind) => {
+                    let chunk_out = transcript::rerun(session, j)?;
+                    match kind {
+                        CodeBlockKind::Indented => {
+                            // TODO: This might be wrong if it's indented more than one level.
+                            output.push_str(&reinsert_indents(&chunk_out))
+                        }
+                        CodeBlockKind::Fenced(tags) => {
+                            writeln!(output, "```{tags}").unwrap();
+                            output.push_str(&chunk_out);
+                            output.push_str("```");
+                        }
+                    }
+                }
+                Chunk::Other(md) => output.push_str(md),
+            }
+        }
+        Ok(output)
+    }
+
     /// Reassemble text and examples into a Markdown doc.
     ///
     /// If all the examples are up-to-date this should recreate the input exactly.
@@ -135,7 +153,11 @@ impl<'markdown> Literate<'markdown> {
                         CodeBlockKind::Indented => {
                             s.push_str(&reinsert_indents(text));
                         }
-                        _ => unimplemented!(),
+                        CodeBlockKind::Fenced(tags) => {
+                            writeln!(s, "```{tags}").unwrap();
+                            s.push_str(&text);
+                            s.push_str("```");
+                        }
                     }
                 }
             }

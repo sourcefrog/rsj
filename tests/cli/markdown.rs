@@ -18,6 +18,7 @@ fn needs_update_md_files() -> impl Iterator<Item = PathBuf> {
 #[test]
 fn diff_needs_update() {
     for path in needs_update_md_files() {
+        println!("** {}", path.display());
         let diff_file = format!("{}.diff", path.display());
         Command::cargo_bin("rsj")
             .unwrap()
