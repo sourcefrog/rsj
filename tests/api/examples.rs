@@ -19,15 +19,14 @@ fn examples_j() {
         .unwrap()
         .map(Result::unwrap)
         .map(|de| de.path())
+        .filter(|path| path.extension().and_then(|e| e.to_str()) == Some("ijs"))
     {
-        if path.extension().and_then(|e| e.to_str()) == Some("ijs") {
-            println!("** {:?}", path);
-            test_one_example(&path);
-        }
+        println!("** {:?}", path);
+        run_j_example(&path);
     }
 }
 
-fn test_one_example(path: &Path) {
+fn run_j_example(path: &Path) {
     let mut session = Session::new();
     let body = fs::read_to_string(path).unwrap();
     let mut lines = body.lines();
