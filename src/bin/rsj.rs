@@ -18,6 +18,13 @@ struct Args {
 
     #[argh(
         option,
+        short = 'M',
+        description = "update a Markdown file containing J fragments"
+    )]
+    update_markdown: Option<PathBuf>,
+
+    #[argh(
+        option,
         description = "extract and print the J transcript from a Markdown file"
     )]
     extract_transcript: Option<PathBuf>,
@@ -31,6 +38,8 @@ fn main() -> rsj::error::Result<()> {
         if !diff.is_empty() {
             std::process::exit(1);
         }
+    } else if let Some(mdpath) = args.update_markdown {
+        rsj::markdown::update_file(&mdpath)?;
     } else if let Some(markdown_path) = args.extract_transcript {
         print!("{}", rsj::markdown::extract_transcript(&markdown_path)?);
     } else {

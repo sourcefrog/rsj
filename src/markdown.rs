@@ -3,7 +3,8 @@
 //! Execute J code within code blocks in Markdown documents.
 
 use std::fmt::Write;
-use std::path::Path;
+use std::fs;
+use std::path::{Path, PathBuf};
 
 use pulldown_cmark::{CodeBlockKind, CowStr, Event, Tag};
 use similar::TextDiff;
@@ -18,11 +19,8 @@ use crate::transcript;
 /// If there are no differences the result is an empty string.
 pub fn diff_file(markdown_path: &Path) -> Result<String> {
     let markdown = std::fs::read_to_string(&markdown_path)?;
-    let literate = Literate::parse(&markdown)?;
-    let mut session = Session::new();
-    let output = literate.run(&mut session)?;
+    let output = Literate::parse(&markdown)?.run(&mut Session::new())?;
     let text_diff = TextDiff::from_lines(&markdown, &output);
-    // TODO: We could include timestamps here.
     let old_name = format!("{}", markdown_path.display());
     let new_name = format!("{}.new", markdown_path.display());
     Ok(text_diff
@@ -30,6 +28,17 @@ pub fn diff_file(markdown_path: &Path) -> Result<String> {
         .context_radius(8)
         .header(&old_name, &new_name)
         .to_string())
+}
+
+/// Run the J source embeddet in a Markdown file and update the file with the
+/// results of executing the J sentences.
+pub fn update_file(markdown_path: &Path) -> Result<()> {
+    let markdown = std::fs::read_to_string(&markdown_path)?;
+    let output = Literate::parse(&markdown)?.run(&mut Session::new())?;
+    let backup_path = PathBuf::from(format!("{}.old", markdown_path.display()));
+    fs::rename(markdown_path, backup_path)?;
+    fs::write(markdown_path, output.as_bytes())?;
+    Ok(())
 }
 
 pub fn extract_transcript(markdown_path: &Path) -> Result<String> {
