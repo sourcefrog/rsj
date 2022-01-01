@@ -7,14 +7,18 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-argh = "0.1.6"
+argh = "0.1"
 assert_cmd = "2.0.2"
 num-complex = "0.4"
 predicates = "2.1"
-pulldown-cmark = { version = "0.8", default-features = false, features = ["simd"] }
-rustyline = "9.0"
+rustyline = "9"
 similar = "2.0"
 tempfile = "3.2.0"
+
+[dependencies.pulldown-cmark]
+default-features = false
+features = ["simd"]
+version = "0.9"
 
 [dev-dependencies]
 pretty_assertions = "1.0"
