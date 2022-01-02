@@ -39,6 +39,20 @@ impl Lex {
         }
     }
 
+    /// If the next character is any character from `s`, consume and return it.
+    pub fn take_any(&mut self, s: &str) -> Option<char> {
+        if let Some(ch) = self.try_peek() {
+            if s.contains(ch) {
+                self.pos += 1;
+                Some(ch)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
     /// Take and return the next character.
     ///
     /// Panics at end of input.
@@ -49,6 +63,7 @@ impl Lex {
     }
 
     /// Take the next character if it's exactly `c` and return true; otherwise false.
+    #[allow(unused)]
     pub fn take_if(&mut self, c: char) -> bool {
         if self.try_peek() == Some(c) {
             self.take();

@@ -61,17 +61,18 @@ impl Scan for Word {
                 break;
             }
         }
-        if lex.take_if('-') {
-            if lex.take_if('.') {
-                return Ok(Some(Word::Verb(&primitive::MINUS_DOT)));
+        if let Some(sym) = lex.take_any("-#+$") {
+            let mut s = String::new();
+            s.push(sym);
+            if let Some(dots) = lex.take_any(".:") {
+                s.push(dots);
             }
-            return Ok(Some(Word::Verb(&primitive::MINUS)));
-        } else if lex.take_if('#') {
-            return Ok(Some(Word::Verb(&primitive::NUMBER)));
-        } else if lex.take_if('+') {
-            return Ok(Some(Word::Verb(&primitive::PLUS)));
-        } else if lex.take_if('$') {
-            return Ok(Some(Word::Verb(&primitive::DOLLAR)));
+            for prim in primitive::PRIMITIVES {
+                if s == prim.name() {
+                    return Ok(Some(Word::Verb(prim)));
+                }
+            }
+            return Err(Error::Unimplemented("primitive"));
         }
         // Take as many contiguous numbers as we can as one list-of-numbers "word".
         let mut numbers: Vec<Atom> = Vec::new();

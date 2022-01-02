@@ -23,7 +23,15 @@ pub const MINUS: Primitive = Primitive("-", Monad::Zero(negate), Dyad::Zero(minu
 pub const MINUS_DOT: Primitive = Primitive("-.", Monad::Zero(not), Dyad::Unimplemented);
 pub const NUMBER: Primitive = Primitive("#", Monad::Infinite(tally), Dyad::Unimplemented);
 pub const PLUS: Primitive = Primitive("+", Monad::Unimplemented, Dyad::Zero(plus));
-pub const DOLLAR: Primitive = Primitive("+", Monad::Infinite(shape_of), Dyad::Unimplemented);
+pub const DOLLAR: Primitive = Primitive("$", Monad::Infinite(shape_of), Dyad::Unimplemented);
+
+pub const PRIMITIVES: &[Primitive] = &[DOLLAR, MINUS, MINUS_DOT, NUMBER, PLUS];
+
+impl Primitive {
+    pub fn name(&self) -> &'static str {
+        self.0
+    }
+}
 
 impl Verb for Primitive {
     fn display(&self) -> Cow<str> {
