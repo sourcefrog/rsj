@@ -11,6 +11,8 @@ pub enum Error {
     /// J language feature that's not supported yet.
     Unimplemented(&'static str),
     IoError(std::io::Error),
+    /// The arrays are not the same shape or length.
+    Length,
 }
 
 impl From<std::io::Error> for Error {

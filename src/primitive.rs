@@ -80,6 +80,8 @@ impl Monad {
 
 /// A primitive verb applicable at various ranks.
 enum Dyad {
+    // TODO: Other ranks, and in particular asymmetric ranks. It might need
+    // a different representation.
     /// Per atom on both sides (0, 0).
     Zero(fn(&Atom, &Atom) -> Result<Atom>),
     Unimplemented,
@@ -92,6 +94,19 @@ impl Dyad {
         match self {
             Dyad::Zero(f) => match (x, y) {
                 (Noun::Atom(ax), Noun::Atom(ay)) => f(ax, ay).map(Noun::from),
+                (Noun::Array(ax), Noun::Array(ay)) => {
+                    // element-wise
+                    if ax.number_items() == ay.number_items() {
+                        Ok(Noun::Array(Array::from_vec(
+                            ax.iter_atoms()
+                                .zip(ay.iter_atoms())
+                                .map(|(ix, iy)| f(ix, iy))
+                                .collect::<Result<Vec<Atom>>>()?,
+                        )))
+                    } else {
+                        Err(Error::Length)
+                    }
+                }
                 // TODO: If there are two arrays: if they're not the same length,
                 // it's an error. Otherwise, make a new array of the same dimensions
                 // and apply element at a time.
