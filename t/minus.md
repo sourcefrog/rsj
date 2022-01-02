@@ -29,4 +29,4 @@ them from a monadic negation operator:
 *negative* applied to a matrix works element-at-a-time to negate the matrix:
 
        - 10 20 30 _40 0
-    _10 _20 _30 40 0
+    _10 _20 _30 40 _0
