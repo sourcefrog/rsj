@@ -25,3 +25,8 @@ them from a monadic negation operator:
     1
        ----9
     9
+
+*negative* applied to a matrix works element-at-a-time to negate the matrix:
+
+       - 10 20 30 _40 0
+    _10 _20 _30 40 0
