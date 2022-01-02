@@ -24,3 +24,15 @@ However the arrays must have the same shape:
    10 20 - 1 2 3
 error: Length
 ```
+
+You can also subtract a number from an array or vice versa.
+
+```
+   1 - 1 0 1 0
+0 1 0 1
+```
+
+```
+   10 11 12 13 14 - 7
+3 4 5 6 7
+```

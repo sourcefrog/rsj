@@ -107,14 +107,16 @@ impl Dyad {
                         Err(Error::Length)
                     }
                 }
-                // TODO: If there are two arrays: if they're not the same length,
-                // it's an error. Otherwise, make a new array of the same dimensions
-                // and apply element at a time.
-                //
-                // TODO: If only x or y is an array: apply elementwise against the
-                // single atom from the other side, to produce an array of the
-                // same size.
-                _ => Err(Error::Unimplemented("Dyad::apply on one or two arrays")),
+                (Noun::Atom(ax), Noun::Array(ay)) => Ok(Noun::Array(Array::from_vec(
+                    ay.iter_atoms()
+                        .map(|iy| f(ax, iy))
+                        .collect::<Result<Vec<Atom>>>()?,
+                ))),
+                (Noun::Array(ax), Noun::Atom(ay)) => Ok(Noun::Array(Array::from_vec(
+                    ax.iter_atoms()
+                        .map(|ix| f(ix, ay))
+                        .collect::<Result<Vec<Atom>>>()?,
+                ))),
             },
             &Dyad::Unimplemented => Err(Error::Unimplemented("Dyad::Unimplemented")),
         }
