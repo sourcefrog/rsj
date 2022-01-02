@@ -19,7 +19,7 @@ use crate::transcript;
 /// If there are no differences the result is an empty string.
 pub fn diff_file(markdown_path: &Path) -> Result<String> {
     let markdown = std::fs::read_to_string(&markdown_path)?;
-    let output = Literate::parse(&markdown)?.run(&mut Session::new())?;
+    let output = Document::parse(&markdown)?.run(&mut Session::new())?;
     let text_diff = TextDiff::from_lines(&markdown, &output);
     let old_name = format!("{}", markdown_path.display());
     let new_name = format!("{}.new", markdown_path.display());
@@ -34,7 +34,7 @@ pub fn diff_file(markdown_path: &Path) -> Result<String> {
 /// results of executing the J sentences.
 pub fn update_file(markdown_path: &Path) -> Result<()> {
     let markdown = std::fs::read_to_string(&markdown_path)?;
-    let output = Literate::parse(&markdown)?.run(&mut Session::new())?;
+    let output = Document::parse(&markdown)?.run(&mut Session::new())?;
     if output != markdown {
         let backup_path = PathBuf::from(format!("{}.old", markdown_path.display()));
         fs::rename(markdown_path, backup_path)?;
@@ -45,7 +45,7 @@ pub fn update_file(markdown_path: &Path) -> Result<()> {
 
 pub fn extract_transcript(markdown_path: &Path) -> Result<String> {
     let markdown = std::fs::read_to_string(&markdown_path)?;
-    Literate::parse(&markdown)?.extract_transcript()
+    Document::parse(&markdown)?.extract_transcript()
 }
 
 /// A section of a markdown file.
@@ -59,18 +59,18 @@ enum Chunk<'markdown> {
 /// A parsed Markdown file containing J examples.
 ///
 /// The lifetime is bounded by a markdown source string held externally.
-struct Literate<'markdown> {
+struct Document<'markdown> {
     chunks: Vec<Chunk<'markdown>>,
 }
 
-impl<'markdown> Literate<'markdown> {
+impl<'markdown> Document<'markdown> {
     /// Parse markdown text into a series of chunks that are either J examples, or
     /// any other text.
     ///
     /// The resulting Chunks, when concatenated, should exactly reproduce the markdown input.
     ///
     /// This is not exactly std::str::FromStr because it keeps pointers into the input.
-    fn parse(md: &'markdown str) -> Result<Literate<'markdown>> {
+    fn parse(md: &'markdown str) -> Result<Document<'markdown>> {
         // The parser events don't account for 100% of input bytes, but we do want to exactly
         // reproduce the input, assuming the J output already has the right values.
         // Therefore, rather than concatenating all the tags, we specifically mark
@@ -109,7 +109,7 @@ impl<'markdown> Literate<'markdown> {
         if prev < md.len() {
             chunks.push(Chunk::Other(&md[prev..]));
         }
-        Ok(Literate { chunks })
+        Ok(Document { chunks })
     }
 
     /// Return the J transcript of all the examples.
@@ -207,7 +207,7 @@ And closing text.
 
     #[test]
     fn extract_and_recombine_examples() {
-        let literate = Literate::parse(MD).unwrap();
+        let literate = Document::parse(MD).unwrap();
         assert_eq!(
             &literate.reassemble(),
             MD,
