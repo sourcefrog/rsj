@@ -31,7 +31,7 @@ pub const PRIMITIVES: &[Primitive] = &[
     MINUS_DOT,
     NUMBER,
     Primitive("%", Monad::Zero(reciprocal), Dyad::Zero(divide)),
-    Primitive("*", Monad::Unimplemented, Dyad::Zero(times)),
+    Primitive("*", Monad::Zero(signum), Dyad::Zero(times)),
     PLUS,
 ];
 
@@ -149,6 +149,20 @@ impl Dyad {
 fn negate(y: &Atom) -> Result<Atom> {
     match y {
         Atom::Complex(a) => Ok(Atom::Complex(-a)),
+    }
+}
+
+fn signum(y: &Atom) -> Result<Atom> {
+    if let Some(y) = y.try_to_f64() {
+        // J signum is 0 for 0, while Rust signum is 1
+        if y == 0.0 {
+            Ok(Atom::zero())
+        } else {
+            Ok(y.signum().into())
+        }
+    } else {
+        // Should be a point on the unit circle on the line from the origin to y.
+        Err(Error::Unimplemented("signum of complex"))
     }
 }
 

@@ -12,6 +12,7 @@
 | $ y    | shape of   | a list: empty for an atom, otherwise giving the length of each axis of y                               |
 | % y    | reciprocal | 1 % y                                                                                                  |
 | x % y  | divide     | division; 0%0 = 0; division by nonzero gives signed infinity                                           |
+| \* y   | signum     | 0 if y=0; \_1 if y<0; otherwise 1                                                                      |
 | x \* y | times      | \_\*0 = 0                                                                                              |
 
 ## Number forms
