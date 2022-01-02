@@ -30,7 +30,7 @@ pub const PRIMITIVES: &[Primitive] = &[
     MINUS,
     MINUS_DOT,
     NUMBER,
-    Primitive("%", Monad::Zero(reciprocal), Dyad::Unimplemented),
+    Primitive("%", Monad::Zero(reciprocal), Dyad::Zero(divide)),
     PLUS,
 ];
 
@@ -160,6 +160,28 @@ fn plus(x: &Atom, y: &Atom) -> Result<Atom> {
     Ok(Atom::Complex(x.to_complex() + y.to_complex()))
 }
 
+/// `x % y` divide
+fn divide(x: &Atom, y: &Atom) -> Result<Atom> {
+    let x = x.to_complex();
+    let y = y.to_complex();
+    // As a special case in J, `0 % 0 = 0`.
+    if x.re == 0.0 && x.im == 0.0 {
+        // TODO: Maybe `_0 % __` should be 0?
+        return Ok(0f64.copysign(y.re).into());
+    }
+    if y.im == 0f64 {
+        // TODO: This might still be wrong for complex numbers.
+        if y.re == 0f64 {
+            // num_complex 0.recip() gives NaN, but J wants signed infinity.
+            // <https://code.jsoftware.com/wiki/Vocabulary/percent>
+            return Ok(Atom::Complex(f64::INFINITY.copysign(y.re).into()));
+        } else if y.re.is_infinite() {
+            return Ok(Atom::Complex(0f64.copysign(y.re).into()));
+        }
+    }
+    Ok(Atom::Complex(x / y))
+}
+
 fn not(y: &Atom) -> Result<Atom> {
     let Atom::Complex(a) = y;
     if a.im != 0.0 {
@@ -176,18 +198,7 @@ fn not(y: &Atom) -> Result<Atom> {
 }
 
 fn reciprocal(y: &Atom) -> Result<Atom> {
-    let y = y.to_complex();
-    if y.im == 0f64 {
-        // TODO: This might still be wrong for complex numbers.
-        if y.re == 0f64 {
-            // num_complex 0.recip() gives NaN, but J wants signed infinity.
-            // <https://code.jsoftware.com/wiki/Vocabulary/percent>
-            return Ok(Atom::Complex(f64::INFINITY.copysign(y.re).into()));
-        } else if y.re.is_infinite() {
-            return Ok(Atom::Complex(0f64.copysign(y.re).into()));
-        }
-    }
-    Ok(Atom::Complex(y.inv()))
+    divide(&1f64.into(), y)
 }
 
 /// Count the items in y.

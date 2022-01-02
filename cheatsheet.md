@@ -11,6 +11,17 @@
 | # y   | tally      | the number of items on the leading axis                                                                |
 | $ y   | shape of   | a list: empty for an atom, otherwise giving the length of each axis of y                               |
 | % y   | reciprocal | 1 % y                                                                                                  |
+| x % y | divide     | division; 0%0 = 0; division by nonzero gives signed infinity                                           |
+
+|
+
+## Number forms
+
+| Form | Meaning           |
+| ---- | ----------------- |
+| `_`  | Positive infinity |
+| `__` | Negative infinity |
+| `_3` | Negative 3        |
 
 ## Glossary
 
