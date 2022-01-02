@@ -54,7 +54,7 @@ impl Session {
         // If the stack wasn't reduced to a single word that's probably
         // because it contains some grammar we don't support yet...?
         if stack.len() > 1 {
-            Err(Error::Unimplemented)
+            Err(Error::Unimplemented("unhandled word on evaluation stack"))
         } else {
             Ok(Sentence::from_vec(stack))
         }

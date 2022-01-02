@@ -9,7 +9,7 @@ pub enum Error {
     ParseNumber(num_complex::ParseComplexError<std::num::ParseFloatError>),
     Domain,
     /// J language feature that's not supported yet.
-    Unimplemented,
+    Unimplemented(&'static str),
     IoError(std::io::Error),
 }
 

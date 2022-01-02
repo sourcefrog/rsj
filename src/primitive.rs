@@ -90,9 +90,9 @@ impl Dyad {
         match self {
             Dyad::Zero(f) => match (x, y) {
                 (Noun::Atom(ax), Noun::Atom(ay)) => f(ax, ay).map(Noun::from),
-                _ => todo!("Dyad::apply on one or two arrays"),
+                _ => Err(Error::Unimplemented("Dyad::apply on one or two arrays")),
             },
-            &Dyad::Unimplemented => Err(Error::Unimplemented),
+            &Dyad::Unimplemented => Err(Error::Unimplemented("Dyad::Unimplemented")),
         }
     }
 }
