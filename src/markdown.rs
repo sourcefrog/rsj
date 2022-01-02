@@ -166,7 +166,7 @@ impl<'markdown> Literate<'markdown> {
                         }
                         CodeBlockKind::Fenced(tags) => {
                             writeln!(s, "```{tags}").unwrap();
-                            s.push_str(&text);
+                            s.push_str(text);
                             s.push_str("```");
                         }
                     }

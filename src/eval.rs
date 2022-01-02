@@ -46,7 +46,7 @@ impl Session {
                 }
             }
             if let [Word::Noun(x), Word::Verb(v), Word::Noun(y), ..] = &stack[cursor..] {
-                stack[cursor] = Word::Noun(v.dyad(&x, &y)?);
+                stack[cursor] = Word::Noun(v.dyad(x, y)?);
                 stack.remove(cursor + 1);
                 stack.remove(cursor + 1);
             }
