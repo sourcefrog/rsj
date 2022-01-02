@@ -53,18 +53,22 @@ fn update_files_needing_update() {
 }
 
 #[test]
-fn diff_needs_update() {
+fn diff_shows_expected_update() {
     for path in md_files_in_dir(&"t/needs_update") {
         println!("** {}", path.display());
         let diff_file = format!("{}.diff", path.display());
-        Command::cargo_bin("rsj")
+        let a = Command::cargo_bin("rsj")
             .unwrap()
             .arg("-D")
             .arg(path)
             .assert()
             .stderr(predicate::str::is_empty())
-            .stdout(read_to_string(&diff_file).expect("read diff file"))
             .code(1);
+        let expected_diff = read_to_string(&diff_file)
+            .expect("read diff file")
+            .replace("\r\n", "\n");
+        let output_str = String::from_utf8_lossy(&a.get_output().stdout).replace("\r\n", "\n");
+        assert_eq!(output_str, expected_diff);
     }
 }
 
