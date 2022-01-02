@@ -62,8 +62,7 @@ impl Scan for Word {
             }
         }
         if let Some(sym) = lex.take_any("-#+$") {
-            let mut s = String::new();
-            s.push(sym);
+            let mut s = String::from(sym);
             if let Some(dots) = lex.take_any(".:") {
                 s.push(dots);
             }
