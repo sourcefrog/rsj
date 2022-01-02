@@ -19,7 +19,9 @@ use crate::transcript;
 /// If there are no differences the result is an empty string.
 pub fn diff_file(markdown_path: &Path) -> Result<String> {
     let markdown = std::fs::read_to_string(&markdown_path)?;
-    let output = Document::parse(&markdown)?.run(&mut Session::new())?;
+    let output = Document::parse(&markdown)?
+        .run(&mut Session::new())?
+        .reassemble();
     let text_diff = TextDiff::from_lines(&markdown, &output);
     let old_name = format!("{}", markdown_path.display());
     let new_name = format!("{}.new", markdown_path.display());
@@ -34,7 +36,9 @@ pub fn diff_file(markdown_path: &Path) -> Result<String> {
 /// results of executing the J sentences.
 pub fn update_file(markdown_path: &Path) -> Result<()> {
     let markdown = std::fs::read_to_string(&markdown_path)?;
-    let output = Document::parse(&markdown)?.run(&mut Session::new())?;
+    let output = Document::parse(&markdown)?
+        .run(&mut Session::new())?
+        .reassemble();
     if output != markdown {
         let backup_path = PathBuf::from(format!("{}.old", markdown_path.display()));
         fs::rename(markdown_path, backup_path)?;
@@ -123,44 +127,31 @@ impl<'markdown> Document<'markdown> {
         Ok(s)
     }
 
-    /// Run all the examples and return the resulting reassembled document.
-    pub fn run(&self, session: &mut Session) -> Result<String> {
-        let mut output = String::new();
+    /// Run all the examples and return a new Document with updated output.
+    pub fn run(&self, session: &mut Session) -> Result<Document> {
+        let mut output = Vec::new();
         for chunk in &self.chunks {
             match chunk {
                 Chunk::J(j, kind) => {
-                    let chunk_out = transcript::rerun(session, j)?;
-                    match kind {
-                        CodeBlockKind::Indented => {
-                            // TODO: This might be wrong if it's indented more than one level.
-                            output.push_str(&reinsert_indents(&chunk_out))
-                        }
-                        CodeBlockKind::Fenced(tags) => {
-                            writeln!(output, "```{}", tags).unwrap();
-                            output.push_str(&chunk_out);
-                            output.push_str("```");
-                        }
-                    }
+                    output.push(Chunk::J(transcript::rerun(session, j)?, kind.clone()))
                 }
-                Chunk::Other(md) => output.push_str(md),
+                Chunk::Other(text) => output.push(Chunk::Other(text)),
             }
         }
-        Ok(output)
+        Ok(Document { chunks: output })
     }
 
     /// Reassemble text and examples into a Markdown doc.
     ///
     /// If all the examples are up-to-date this should recreate the input exactly.
-    #[allow(unused)]
     fn reassemble(&self) -> String {
         let mut s = String::new();
         for c in &self.chunks {
             match c {
                 Chunk::Other(text) => s.push_str(text),
                 Chunk::J(text, kind) => {
-                    // TODO: Re-insert fences or indents.
                     match kind {
-                        // TODO: This might be wrong if it's indented more than one level.
+                        // TODO: This might be wrong if it's indented more than one level?
                         CodeBlockKind::Indented => {
                             s.push_str(&reinsert_indents(text));
                         }
