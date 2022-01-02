@@ -4,19 +4,24 @@
 
 use std::fmt;
 
+use ndarray::prelude::*;
+
 use crate::atom::Atom;
 
-/// Arrays potentially have n dimensions, although only 1-dimensional arrays are implemented now.
+/// Arrays potentially have n dimensions, although only 1-dimensional arrays are
+/// supported for now.
+///
+/// Arrays are backed by an ndarray array.
 ///
 /// Arrays contain atoms.
 // TODO: Require that arrays contain homogenous atoms.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Array(Vec<Atom>);
+pub struct Array(Array1<Atom>);
 
 impl Array {
     /// Construct an array by taking ownership of a Vec of Atoms.
     pub fn from_vec(v: Vec<Atom>) -> Array {
-        Array(v)
+        Array(v.into())
     }
 
     /// Iterate by-reference the atoms in the array.
@@ -34,14 +39,14 @@ impl Array {
 
     /// Return the shape of the array, as another array.
     pub fn shape(&self) -> Array {
-        Array(vec![self.0.len().into()])
+        Array::from_vec(self.0.shape().into_iter().map(|&s| s.into()).collect())
     }
 }
 
 /// Iterate by-reference the elements of the array.
 impl<'a> IntoIterator for &'a Array {
     type Item = &'a Atom;
-    type IntoIter = std::slice::Iter<'a, Atom>;
+    type IntoIter = ndarray::iter::Iter<'a, Atom, Ix1>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.iter()
