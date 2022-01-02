@@ -96,6 +96,9 @@ impl Dyad {
                 (Noun::Atom(ax), Noun::Atom(ay)) => f(ax, ay).map(Noun::from),
                 (Noun::Array(ax), Noun::Array(ay)) => {
                     // element-wise
+                    // TODO: This is actually too specific: it's OK for the arrays to be
+                    // different shapes as long as they "agree":
+                    // https://code.jsoftware.com/wiki/Vocabulary/Agreement
                     if ax.shape() == ay.shape() {
                         Ok(Noun::Array(Array::from_vec(
                             ax.iter_atoms()
