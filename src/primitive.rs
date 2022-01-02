@@ -96,7 +96,7 @@ impl Dyad {
                 (Noun::Atom(ax), Noun::Atom(ay)) => f(ax, ay).map(Noun::from),
                 (Noun::Array(ax), Noun::Array(ay)) => {
                     // element-wise
-                    if ax.number_items() == ay.number_items() {
+                    if ax.shape() == ay.shape() {
                         Ok(Noun::Array(Array::from_vec(
                             ax.iter_atoms()
                                 .zip(ay.iter_atoms())

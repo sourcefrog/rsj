@@ -31,6 +31,11 @@ impl Array {
     pub fn number_items(&self) -> usize {
         self.0.len()
     }
+
+    /// Return the shape of the array, as another array.
+    pub fn shape(&self) -> Array {
+        Array(vec![self.0.len().into()])
+    }
 }
 
 /// Iterate by-reference the elements of the array.
