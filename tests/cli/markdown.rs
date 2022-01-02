@@ -5,9 +5,9 @@
 use std::fs::{self, read_dir, read_to_string};
 use std::path::{Path, PathBuf};
 
-use assert_cmd::prelude::OutputOkExt;
 use assert_cmd::Command;
 use predicates::prelude::*;
+use pretty_assertions::assert_eq;
 
 fn md_files_in_dir<P>(p: &P) -> impl Iterator<Item = PathBuf>
 where
@@ -23,25 +23,32 @@ where
 #[test]
 fn update_files_needing_update() {
     let tmpdir = tempfile::tempdir().unwrap();
-    for path in md_files_in_dir(&"t/needs_update") {
+    let testdata_dir = Path::new("t/needs_update");
+    let snapshot_dir = Path::new("../../").join(testdata_dir);
+    for path in md_files_in_dir(&testdata_dir) {
         println!("** {}", path.display());
         let tmp_path = tmpdir.path().join(path.file_name().unwrap());
-        fs::copy(path, &tmp_path).unwrap();
+        fs::copy(&path, &tmp_path).unwrap();
         Command::cargo_bin("rsj")
             .unwrap()
             .arg("-M")
-            .arg(tmp_path)
+            .arg(&tmp_path)
             .assert()
             .stderr(predicate::str::is_empty())
             .stdout(predicate::str::is_empty())
             .code(0);
-        // TODO: Check the expected content.
-        // TODO: Check the backup file was created and is identical to
-        // the original content.
-        // TODO: Check that neither the mtime or content of the text
-        // input file was mutated - which should be impossible since
-        // we made a copy, but let's make sure.
-        // TODO: Check that running it again does nothing.
+        insta::with_settings!({snapshot_path => &snapshot_dir}, {
+            insta::assert_snapshot!(
+                path.display().to_string(),
+                read_to_string(&tmp_path).unwrap()
+            );
+        });
+        let backup_path = PathBuf::from(format!("{}.old", tmp_path.display()));
+        assert_eq!(
+            read_to_string(backup_path).unwrap(),
+            read_to_string(&path).unwrap(),
+            "backup file doesn't match the original file"
+        );
     }
 }
 
@@ -74,4 +81,7 @@ fn blog_files_are_up_to_date() {
             .stdout(predicate::str::is_empty())
             .code(0);
     }
+
+    // TODO: Check that `-M` does not modify them and does not create
+    // backups.
 }

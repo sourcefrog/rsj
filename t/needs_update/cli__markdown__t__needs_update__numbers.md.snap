@@ -1,0 +1,18 @@
+---
+source: tests/cli/markdown.rs
+assertion_line: 40
+expression: read_to_string(&tmp_path).unwrap()
+
+---
+# Markdown with embedded J
+
+This file has J code embedded, but it hasn't been updated with the output.
+
+`rsj -D numbers.md` will show a diff.
+
+       10 20 30
+    10 20 30
+       - 10 20 30
+    _10 _20 _30
+
+
