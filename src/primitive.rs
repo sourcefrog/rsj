@@ -5,6 +5,7 @@
 // See https://code.jsoftware.com/wiki/Vocabulary/Words#Primitives
 
 use std::borrow::Cow;
+use std::convert::TryInto;
 use std::fmt;
 
 use fmt::Formatter;
@@ -33,11 +34,21 @@ pub const PRIMITIVES: &[Primitive] = &[
     Primitive("%", Monad::Zero(reciprocal), Dyad::Zero(divide)),
     Primitive("*", Monad::Zero(signum), Dyad::Zero(times)),
     PLUS,
+    Primitive("i.", Monad::Infinite(integers), Dyad::Unimplemented),
 ];
 
 impl Primitive {
     pub fn name(&self) -> &'static str {
         self.0
+    }
+
+    pub fn by_name(s: &str) -> Result<&'static Primitive> {
+        for prim in PRIMITIVES {
+            if s == prim.name() {
+                return Ok(prim);
+            }
+        }
+        Err(Error::Unimplemented("primitive"))
     }
 }
 
@@ -237,5 +248,23 @@ fn shape_of(y: &Noun) -> Result<Noun> {
     match y {
         Noun::Atom(_) => Ok(Noun::Array(Array::empty())),
         Noun::Array(a) => Ok(Noun::Array(a.shape())),
+    }
+}
+
+fn integers(y: &Noun) -> Result<Noun> {
+    match y {
+        Noun::Atom(y) => {
+            if let Some(y) = y.try_to_f64() {
+                if y < 0.0 {
+                    return Err(Error::Unimplemented("i. negative"));
+                }
+                // TODO: Exclude fractions?
+                let y = y as usize;
+                Ok(Noun::Array(Array::from((0..y).into_iter().map(Atom::from))))
+            } else {
+                Err(Error::Domain)
+            }
+        }
+        _ => Err(Error::Unimplemented("integers from list")),
     }
 }

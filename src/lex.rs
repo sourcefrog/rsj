@@ -62,6 +62,11 @@ impl Lex {
         c
     }
 
+    /// Peek ahead by n characters.
+    pub fn lookahead(&self, n: usize) -> Option<char> {
+        self.chars.get(self.pos + n).cloned()
+    }
+
     /// Take the next character if it's exactly `c` and return true; otherwise false.
     #[allow(unused)]
     pub fn take_if(&mut self, c: char) -> bool {

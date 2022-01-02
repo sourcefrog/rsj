@@ -17,7 +17,7 @@ use crate::atom::Atom;
 use crate::error::{Error, Result};
 use crate::lex::Lex;
 use crate::noun::Noun;
-use crate::primitive;
+use crate::primitive::Primitive;
 use crate::word::{Sentence, Word};
 
 /// Parse J source into a sentence of words.
@@ -66,12 +66,15 @@ impl Scan for Word {
             if let Some(dots) = lex.take_any(".:") {
                 s.push(dots);
             }
-            for prim in primitive::PRIMITIVES {
-                if s == prim.name() {
-                    return Ok(Some(Word::Verb(prim)));
+            return Ok(Some(Word::Verb(Primitive::by_name(&s)?)));
+        } else if lex.peek().is_ascii_alphabetic() {
+            if let Some(dots) = lex.lookahead(1) {
+                if dots == '.' || dots == ':' {
+                    let mut s = String::from(lex.take());
+                    s.push(lex.take());
+                    return Ok(Some(Word::Verb(Primitive::by_name(&s)?)));
                 }
             }
-            return Err(Error::Unimplemented("primitive"));
         }
         // Take as many contiguous numbers as we can as one list-of-numbers "word".
         let mut numbers: Vec<Atom> = Vec::new();
