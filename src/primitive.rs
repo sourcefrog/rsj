@@ -23,6 +23,7 @@ pub const MINUS: Primitive = Primitive("-", Monad::Zero(negate), Dyad::Zero(minu
 pub const MINUS_DOT: Primitive = Primitive("-.", Monad::Zero(not), Dyad::Unimplemented);
 pub const NUMBER: Primitive = Primitive("#", Monad::Infinite(tally), Dyad::Unimplemented);
 pub const PLUS: Primitive = Primitive("+", Monad::Unimplemented, Dyad::Zero(plus));
+pub const DOLLAR: Primitive = Primitive("+", Monad::Infinite(shape_of), Dyad::Unimplemented);
 
 impl Verb for Primitive {
     fn display(&self) -> Cow<str> {
@@ -164,5 +165,13 @@ fn tally(y: &Noun) -> Result<Noun> {
     match y {
         Noun::Atom(_) => Ok(Noun::Atom(1.into())),
         Noun::Array(a) => Ok(Noun::Atom(a.number_items().into())),
+    }
+}
+
+/// Return a list describing the shape of y.
+fn shape_of(y: &Noun) -> Result<Noun> {
+    match y {
+        Noun::Atom(_) => Ok(Noun::Array(Array::empty())),
+        Noun::Array(a) => Ok(Noun::Array(a.shape())),
     }
 }

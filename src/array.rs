@@ -14,7 +14,10 @@ use crate::atom::Atom;
 /// Arrays are backed by an ndarray array.
 ///
 /// Arrays contain atoms.
-// TODO: Require that arrays contain homogenous atoms.
+///
+/// Arrays are always homogenous: all the atoms must be of the same kind.
+/// At present, each item is individually an Atom enum, but potentially the
+/// discriminant could be lifted to the level of the Array.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Array(ArrayD<Atom>);
 
@@ -40,6 +43,11 @@ impl Array {
     /// Return the shape of the array, as another array.
     pub fn shape(&self) -> Array {
         self.0.shape().iter().map(|&s| Atom::from(s)).collect()
+    }
+
+    /// Return an empty (1-d) array.
+    pub fn empty() -> Array {
+        Array::from_vec(vec![])
     }
 }
 
@@ -84,6 +92,7 @@ where
 
 impl fmt::Display for Array {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // TODO: Handle multi-dimensional arrays.
         for (i, atom) in self.0.iter().enumerate() {
             if i > 0 {
                 write!(f, " ")?;
