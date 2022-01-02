@@ -68,6 +68,8 @@ impl Scan for Word {
             return Ok(Some(Word::Verb(&primitive::MINUS)));
         } else if lex.take_if('#') {
             return Ok(Some(Word::Verb(&primitive::NUMBER)));
+        } else if lex.take_if('+') {
+            return Ok(Some(Word::Verb(&primitive::PLUS)));
         }
         // Take as many contiguous numbers as we can as one list-of-numbers "word".
         let mut numbers: Vec<Atom> = Vec::new();

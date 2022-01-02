@@ -13,6 +13,14 @@ pub enum Atom {
     // TODO: char, ...
 }
 
+impl Atom {
+    pub fn to_complex(&self) -> Complex64 {
+        match self {
+            Atom::Complex(a) => *a,
+        }
+    }
+}
+
 impl From<f64> for Atom {
     fn from(v: f64) -> Self {
         Atom::Complex(v.into())

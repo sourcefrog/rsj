@@ -22,6 +22,7 @@ pub struct Primitive(&'static str, Monad, Dyad);
 pub const MINUS: Primitive = Primitive("-", Monad::Zero(negate), Dyad::Zero(minus));
 pub const MINUS_DOT: Primitive = Primitive("-.", Monad::Zero(not), Dyad::Unimplemented);
 pub const NUMBER: Primitive = Primitive("#", Monad::Infinite(tally), Dyad::Unimplemented);
+pub const PLUS: Primitive = Primitive("+", Monad::Unimplemented, Dyad::Zero(plus));
 
 impl Verb for Primitive {
     fn display(&self) -> Cow<str> {
@@ -60,6 +61,7 @@ enum Monad {
     /// A monad that applies per-atom.
     Zero(fn(&Atom) -> Result<Atom>),
     Infinite(fn(&Noun) -> Result<Noun>),
+    Unimplemented,
     // TODO: One, Two, ...
 }
 
@@ -74,6 +76,7 @@ impl Monad {
                 ))),
             },
             Monad::Infinite(f) => f(y),
+            Monad::Unimplemented => Err(Error::Unimplemented("Monad::Unimplemented")),
         }
     }
 }
@@ -133,9 +136,12 @@ fn negate(y: &Atom) -> Result<Atom> {
 }
 
 fn minus(x: &Atom, y: &Atom) -> Result<Atom> {
-    let Atom::Complex(x) = x;
-    let Atom::Complex(y) = y;
-    Ok(Atom::Complex(x - y))
+    Ok(Atom::Complex(x.to_complex() - y.to_complex()))
+}
+
+/// Add atoms.
+fn plus(x: &Atom, y: &Atom) -> Result<Atom> {
+    Ok(Atom::Complex(x.to_complex() + y.to_complex()))
 }
 
 fn not(y: &Atom) -> Result<Atom> {
