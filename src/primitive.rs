@@ -87,9 +87,18 @@ enum Dyad {
 
 impl Dyad {
     fn apply(&self, x: &Noun, y: &Noun) -> Result<Noun> {
+        // TODO: This code for working out how to apply element-at-a-time etc
+        // probably should be generic to all verbs, not only primitives.
         match self {
             Dyad::Zero(f) => match (x, y) {
                 (Noun::Atom(ax), Noun::Atom(ay)) => f(ax, ay).map(Noun::from),
+                // TODO: If there are two arrays: if they're not the same length,
+                // it's an error. Otherwise, make a new array of the same dimensions
+                // and apply element at a time.
+                //
+                // TODO: If only x or y is an array: apply elementwise against the
+                // single atom from the other side, to produce an array of the
+                // same size.
                 _ => Err(Error::Unimplemented("Dyad::apply on one or two arrays")),
             },
             &Dyad::Unimplemented => Err(Error::Unimplemented("Dyad::Unimplemented")),
