@@ -19,13 +19,20 @@ use crate::verb::Verb;
 pub struct Primitive(&'static str, Monad, Dyad);
 
 // All implemented primitives.
+pub const DOLLAR: Primitive = Primitive("$", Monad::Infinite(shape_of), Dyad::Unimplemented);
 pub const MINUS: Primitive = Primitive("-", Monad::Zero(negate), Dyad::Zero(minus));
 pub const MINUS_DOT: Primitive = Primitive("-.", Monad::Zero(not), Dyad::Unimplemented);
 pub const NUMBER: Primitive = Primitive("#", Monad::Infinite(tally), Dyad::Unimplemented);
 pub const PLUS: Primitive = Primitive("+", Monad::Unimplemented, Dyad::Zero(plus));
-pub const DOLLAR: Primitive = Primitive("$", Monad::Infinite(shape_of), Dyad::Unimplemented);
 
-pub const PRIMITIVES: &[Primitive] = &[DOLLAR, MINUS, MINUS_DOT, NUMBER, PLUS];
+pub const PRIMITIVES: &[Primitive] = &[
+    DOLLAR,
+    MINUS,
+    MINUS_DOT,
+    NUMBER,
+    Primitive("%", Monad::Zero(reciprocal), Dyad::Unimplemented),
+    PLUS,
+];
 
 impl Primitive {
     pub fn name(&self) -> &'static str {
@@ -166,6 +173,21 @@ fn not(y: &Atom) -> Result<Atom> {
     } else {
         Err(Error::Domain)
     }
+}
+
+fn reciprocal(y: &Atom) -> Result<Atom> {
+    let y = y.to_complex();
+    if y.im == 0f64 {
+        // TODO: This might still be wrong for complex numbers.
+        if y.re == 0f64 {
+            // num_complex 0.recip() gives NaN, but J wants signed infinity.
+            // <https://code.jsoftware.com/wiki/Vocabulary/percent>
+            return Ok(Atom::Complex(f64::INFINITY.copysign(y.re).into()));
+        } else if y.re.is_infinite() {
+            return Ok(Atom::Complex(0f64.copysign(y.re).into()));
+        }
+    }
+    Ok(Atom::Complex(y.inv()))
 }
 
 /// Count the items in y.
