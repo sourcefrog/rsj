@@ -2,25 +2,29 @@
 
 //! Test example session files.
 
-use std::fs;
-use std::path::Path;
+use std::fs::{self, read_dir};
+use std::path::{Path, PathBuf};
 
 use pretty_assertions::assert_eq;
 
 use rsj::eval::Session;
 
 const PROMPT: &str = "   ";
-const EXAMPLE_DIR: &str = "t";
+
+fn glob_in_dir<'a, P>(dir: &P, extension: &'a str) -> impl Iterator<Item = PathBuf> + 'a
+where
+    P: AsRef<Path> + ?Sized,
+{
+    read_dir(dir.as_ref())
+        .expect("read_dir")
+        .map(Result::unwrap)
+        .map(|de| de.path())
+        .filter(move |path| path.extension().and_then(|e| e.to_str()) == Some(extension))
+}
 
 #[test]
 fn examples_j() {
-    let dir = Path::new(EXAMPLE_DIR);
-    for path in fs::read_dir(dir)
-        .unwrap()
-        .map(Result::unwrap)
-        .map(|de| de.path())
-        .filter(|path| path.extension().and_then(|e| e.to_str()) == Some("ijs"))
-    {
+    for path in glob_in_dir("t", "ijs") {
         println!("** {:?}", path);
         run_j_example(&path);
     }
@@ -43,5 +47,15 @@ fn run_j_example(path: &Path) {
             assert!(!expected.starts_with(PROMPT));
             assert_eq!(output, expected);
         }
+    }
+}
+
+#[test]
+fn examples_md() {
+    for md_path in glob_in_dir("t", "md") {
+        println!("** {:?}", &md_path);
+        let diff = rsj::markdown::diff_file(&md_path).unwrap();
+        println!("{}", diff);
+        assert!(diff.is_empty());
     }
 }
