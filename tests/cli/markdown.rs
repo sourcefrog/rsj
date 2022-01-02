@@ -70,18 +70,37 @@ fn diff_needs_update() {
 
 #[test]
 fn blog_files_are_up_to_date() {
+    let tmpdir = tempfile::tempdir().unwrap();
     for path in md_files_in_dir(&"blog") {
         println!("** {}", path.display());
+        let tmp_path = tmpdir.path().join(path.file_name().unwrap());
+        fs::copy(&path, &tmp_path).unwrap();
+        let orig_tmp_mtime = fs::metadata(&tmp_path).unwrap().modified().unwrap();
+
+        // -D produces no output and succeeds, because it's up to date.
         Command::cargo_bin("rsj")
             .unwrap()
             .arg("-D")
-            .arg(path)
+            .arg(&tmp_path)
             .assert()
             .stderr(predicate::str::is_empty())
             .stdout(predicate::str::is_empty())
             .code(0);
-    }
 
-    // TODO: Check that `-M` does not modify them and does not create
-    // backups.
+        // -M does not modify the file or produce a backup.
+        Command::cargo_bin("rsj")
+            .unwrap()
+            .arg("-M")
+            .arg(&tmp_path)
+            .assert()
+            .stderr(predicate::str::is_empty())
+            .stdout(predicate::str::is_empty())
+            .code(0);
+        let backup_path = PathBuf::from(format!("{}.old", tmp_path.display()));
+        assert!(!backup_path.exists(), "{:?} exists", &backup_path);
+        assert_eq!(
+            fs::metadata(&tmp_path).unwrap().modified().unwrap(),
+            orig_tmp_mtime
+        );
+    }
 }

@@ -35,9 +35,11 @@ pub fn diff_file(markdown_path: &Path) -> Result<String> {
 pub fn update_file(markdown_path: &Path) -> Result<()> {
     let markdown = std::fs::read_to_string(&markdown_path)?;
     let output = Literate::parse(&markdown)?.run(&mut Session::new())?;
-    let backup_path = PathBuf::from(format!("{}.old", markdown_path.display()));
-    fs::rename(markdown_path, backup_path)?;
-    fs::write(markdown_path, output.as_bytes())?;
+    if output != markdown {
+        let backup_path = PathBuf::from(format!("{}.old", markdown_path.display()));
+        fs::rename(markdown_path, backup_path)?;
+        fs::write(markdown_path, output.as_bytes())?;
+    }
     Ok(())
 }
 
