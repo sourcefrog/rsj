@@ -14,9 +14,19 @@ pub enum Atom {
 }
 
 impl Atom {
+    pub fn zero() -> Atom {
+        Atom::Complex(0.0.into())
+    }
+
     pub fn to_complex(&self) -> Complex64 {
         match self {
             Atom::Complex(a) => *a,
+        }
+    }
+
+    pub fn is_zero(&self) -> bool {
+        match self {
+            Atom::Complex(Complex64 { re, im }) => *re == 0.0 && *im == 0.0,
         }
     }
 

@@ -31,6 +31,7 @@ pub const PRIMITIVES: &[Primitive] = &[
     MINUS_DOT,
     NUMBER,
     Primitive("%", Monad::Zero(reciprocal), Dyad::Zero(divide)),
+    Primitive("*", Monad::Unimplemented, Dyad::Zero(times)),
     PLUS,
 ];
 
@@ -180,6 +181,16 @@ fn divide(x: &Atom, y: &Atom) -> Result<Atom> {
         }
     }
     Ok(Atom::Complex(x / y))
+}
+
+fn times(x: &Atom, y: &Atom) -> Result<Atom> {
+    if x.is_zero() || y.is_zero() {
+        // Multiplying even infinity by 0 is 0.
+        // https://code.jsoftware.com/wiki/Vocabulary/star
+        Ok(Atom::zero())
+    } else {
+        Ok(Atom::Complex(x.to_complex() * y.to_complex()))
+    }
 }
 
 fn not(y: &Atom) -> Result<Atom> {
