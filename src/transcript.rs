@@ -13,9 +13,11 @@ pub fn rerun(session: &mut Session, ts: &str) -> Result<String> {
             out.push_str(l);
             out.push('\n');
             let output = session.eval_text(s);
-            assert!(!output.ends_with('\n'));
-            out.push_str(&output);
-            out.push('\n');
+            if !output.is_empty() {
+                assert!(!output.ends_with('\n'));
+                out.push_str(&output);
+                out.push('\n');
+            }
         }
     }
     Ok(out)
