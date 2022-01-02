@@ -183,15 +183,13 @@ fn divide(x: &Atom, y: &Atom) -> Result<Atom> {
 }
 
 fn not(y: &Atom) -> Result<Atom> {
-    let Atom::Complex(a) = y;
-    if a.im != 0.0 {
-        Err(Error::Domain)
-    } else if a.re == 0.0 {
+    let y = y.try_to_f64().ok_or(Error::Domain)?;
+    if y == 0.0 {
         Ok(1.0.into())
-    } else if a.re == 1.0 {
+    } else if y == 1.0 {
         Ok(0.0.into())
-    } else if a.re > 0.0 && a.re < 1.0 {
-        Ok(Atom::from(1.0 - a))
+    } else if y > 0.0 && y < 1.0 {
+        Ok(Atom::from(1.0 - y))
     } else {
         Err(Error::Domain)
     }

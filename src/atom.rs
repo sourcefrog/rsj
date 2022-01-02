@@ -19,6 +19,19 @@ impl Atom {
             Atom::Complex(a) => *a,
         }
     }
+
+    /// Return an f64 if this is representable as such.
+    pub fn try_to_f64(&self) -> Option<f64> {
+        match self {
+            Atom::Complex(Complex64 { re, im }) => {
+                if *im == 0.0 {
+                    Some(*re)
+                } else {
+                    None
+                }
+            }
+        }
+    }
 }
 
 impl From<f64> for Atom {
