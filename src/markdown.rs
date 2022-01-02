@@ -2,7 +2,6 @@
 
 //! Execute J code within code blocks in Markdown documents.
 
-use std::fmt::Write;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -65,6 +64,8 @@ enum Chunk<'markdown> {
 /// The lifetime is bounded by a markdown source string held externally.
 struct Document<'markdown> {
     chunks: Vec<Chunk<'markdown>>,
+    /// True if the original document uses CRLF line breaks.
+    crlf: bool,
 }
 
 impl<'markdown> Document<'markdown> {
@@ -75,6 +76,7 @@ impl<'markdown> Document<'markdown> {
     ///
     /// This is not exactly std::str::FromStr because it keeps pointers into the input.
     fn parse(md: &'markdown str) -> Result<Document<'markdown>> {
+        let crlf = md.contains("\r\n");
         // The parser events don't account for 100% of input bytes, but we do want to exactly
         // reproduce the input, assuming the J output already has the right values.
         // Therefore, rather than concatenating all the tags, we specifically mark
@@ -113,7 +115,7 @@ impl<'markdown> Document<'markdown> {
         if prev < md.len() {
             chunks.push(Chunk::Other(&md[prev..]));
         }
-        Ok(Document { chunks })
+        Ok(Document { chunks, crlf })
     }
 
     /// Return the J transcript of all the examples.
@@ -133,12 +135,16 @@ impl<'markdown> Document<'markdown> {
         for chunk in &self.chunks {
             match chunk {
                 Chunk::J(j, kind) => {
-                    output.push(Chunk::J(transcript::rerun(session, j)?, kind.clone()))
+                    let fragment = transcript::rerun(session, j)?;
+                    output.push(Chunk::J(fragment, kind.clone()))
                 }
                 Chunk::Other(text) => output.push(Chunk::Other(text)),
             }
         }
-        Ok(Document { chunks: output })
+        Ok(Document {
+            chunks: output,
+            crlf: self.crlf,
+        })
     }
 
     /// Reassemble text and examples into a Markdown doc.
@@ -150,17 +156,17 @@ impl<'markdown> Document<'markdown> {
             match c {
                 Chunk::Other(text) => s.push_str(text),
                 Chunk::J(text, kind) => {
-                    match kind {
+                    let mut fragment = match kind {
                         // TODO: This might be wrong if it's indented more than one level?
-                        CodeBlockKind::Indented => {
-                            s.push_str(&reinsert_indents(text));
-                        }
+                        CodeBlockKind::Indented => reinsert_indents(text),
                         CodeBlockKind::Fenced(tags) => {
-                            writeln!(s, "```{}", tags).unwrap();
-                            s.push_str(text);
-                            s.push_str("```");
+                            format!("```{}\n{}```", tags, text)
                         }
+                    };
+                    if self.crlf {
+                        fragment = fragment.replace('\n', "\r\n");
                     }
+                    s.push_str(&fragment);
                 }
             }
         }
@@ -226,5 +232,16 @@ And closing text.
 7
 "
         );
+    }
+
+    #[test]
+    fn update_markdown_with_crlf_inserts_crlf() -> Result<()> {
+        let doc = Document::parse("```\r\n   # 1 2 3\r\n```\r\nfin.\r\n")?;
+        let updated = doc.run(&mut Session::new())?;
+        assert_eq!(
+            updated.reassemble(),
+            "```\r\n   # 1 2 3\r\n3\r\n```\r\nfin.\r\n"
+        );
+        Ok(())
     }
 }
