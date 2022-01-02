@@ -16,12 +16,12 @@ use crate::atom::Atom;
 /// Arrays contain atoms.
 // TODO: Require that arrays contain homogenous atoms.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Array(Array1<Atom>);
+pub struct Array(ArrayD<Atom>);
 
 impl Array {
     /// Construct an array by taking ownership of a Vec of Atoms.
     pub fn from_vec(v: Vec<Atom>) -> Array {
-        Array(v.into())
+        Array(Array1::from(v).into_dyn())
     }
 
     /// Iterate by-reference the atoms in the array.
@@ -46,7 +46,7 @@ impl Array {
 /// Iterate by-reference the elements of the array.
 impl<'a> IntoIterator for &'a Array {
     type Item = &'a Atom;
-    type IntoIter = ndarray::iter::Iter<'a, Atom, Ix1>;
+    type IntoIter = ndarray::iter::Iter<'a, Atom, IxDyn>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.iter()
@@ -62,7 +62,12 @@ where
     where
         I: IntoIterator<Item = T>,
     {
-        Array(iter.into_iter().map(Atom::from).collect())
+        Array(
+            iter.into_iter()
+                .map(Atom::from)
+                .collect::<Array1<_>>()
+                .into_dyn(),
+        )
     }
 }
 
