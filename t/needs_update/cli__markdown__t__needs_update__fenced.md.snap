@@ -1,0 +1,16 @@
+---
+source: tests/cli/markdown.rs
+assertion_line: 40
+expression: read_to_string(&tmp_path).unwrap()
+
+---
+# Fenced blocks in Markdown
+
+If you put J code in blocks "fenced" with three backticks, rsj preserves that formatting:
+
+```
+   6 - 2
+4
+```
+
+

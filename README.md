@@ -26,6 +26,8 @@ I thought it would be fun to understand J better by writing an interpreter in Ru
 
 ## Supported features
 
+### Core language
+
 Only floating-point numbers and 1-dimensional arrays of numbers are implemented so far.
 (They're actually complex numbers internally but there is no syntax to create complex
 numbers yet.)
@@ -41,9 +43,17 @@ Verbs:
 For examples see the `t/` directory: the lines indented by three spaces are the input 
 and the unindented lines are the expected output. These are all checked by `cargo test`.
 
+### Literate programming
+
+rsj supports running J code embedded in Markdown files, with the output
+reinserted into the file, for a kind of literate programming or notebook
+experience.
+
+`rsj -D markdown.md` shows a diff of updates to the file.
+
 ## Goals
 
-* Be able to run any solutions I can write to Advent of Code.
+* Run any code that I can write for `advent-of-j`.
 
 * Be reasonably faithful to the J specification: this is an implementation of J,
   not just a J-inspired language. But, it's not necessary to produce precisely 
@@ -60,11 +70,12 @@ and the unindented lines are the expected output. These are all checked by `carg
   e.g. readline editing.
   
 * Support a kind of literate programming by running examples from inside Markdown
-  docs (not supported yet) or `.ijs` files.
+  docs.
   
 * Maybe, support a notebook interface.
   
 * Write clean idiomatic Rust. Understand a good mapping from J types to Rust types.
+  The internal implementation doesn't need to be "J in Rust."
 
 * Never panic.
 

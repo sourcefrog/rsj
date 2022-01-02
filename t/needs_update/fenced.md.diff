@@ -1,0 +1,12 @@
+--- t/needs_update/fenced.md
++++ t/needs_update/fenced.md.new
+@@ -1,8 +1,9 @@
+ # Fenced blocks in Markdown
+ 
+ If you put J code in blocks "fenced" with three backticks, rsj preserves that formatting:
+ 
+ ```
+    6 - 2
++4
+ ```
+ 

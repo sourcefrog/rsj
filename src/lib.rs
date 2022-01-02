@@ -7,10 +7,12 @@ pub mod atom;
 pub mod error;
 pub mod eval;
 pub mod lex;
+pub mod markdown;
 pub mod noun;
 pub mod parse;
 pub mod primitive;
 pub mod repl;
+pub mod transcript;
 pub mod verb;
 pub mod word;
 
