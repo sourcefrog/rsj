@@ -136,7 +136,7 @@ impl<'markdown> Literate<'markdown> {
                             output.push_str(&reinsert_indents(&chunk_out))
                         }
                         CodeBlockKind::Fenced(tags) => {
-                            writeln!(output, "```{tags}").unwrap();
+                            writeln!(output, "```{}", tags).unwrap();
                             output.push_str(&chunk_out);
                             output.push_str("```");
                         }
@@ -165,7 +165,7 @@ impl<'markdown> Literate<'markdown> {
                             s.push_str(&reinsert_indents(text));
                         }
                         CodeBlockKind::Fenced(tags) => {
-                            writeln!(s, "```{tags}").unwrap();
+                            writeln!(s, "```{}", tags).unwrap();
                             s.push_str(text);
                             s.push_str("```");
                         }
