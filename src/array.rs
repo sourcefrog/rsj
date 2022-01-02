@@ -39,7 +39,7 @@ impl Array {
 
     /// Return the shape of the array, as another array.
     pub fn shape(&self) -> Array {
-        Array::from_vec(self.0.shape().into_iter().map(|&s| s.into()).collect())
+        self.0.shape().iter().map(|&s| Atom::from(s)).collect()
     }
 }
 
