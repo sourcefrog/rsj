@@ -22,8 +22,8 @@ pub fn diff_file(markdown_path: &Path) -> Result<String> {
         .run(&mut Session::new())?
         .reassemble();
     let text_diff = TextDiff::from_lines(&markdown, &output);
-    let old_name = format!("{}", markdown_path.display());
-    let new_name = format!("{}.new", markdown_path.display());
+    let old_name = format!("{}", markdown_path.display()).replace('\\', "/");
+    let new_name = format!("{}.new", old_name);
     Ok(text_diff
         .unified_diff()
         .context_radius(8)
