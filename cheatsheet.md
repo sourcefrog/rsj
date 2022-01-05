@@ -14,6 +14,7 @@
 | x % y  | divide     | division; 0%0 = 0; division by nonzero gives signed infinity                                           |
 | \* y   | signum     | 0 if y=0; \_1 if y<0; otherwise 1                                                                      |
 | x \* y | times      | \_\*0 = 0                                                                                              |
+| i. y   | integers   | a list of i integers starting from 0 if y is >=0; other cases are unimplemented                        |
 
 ## Number forms
 
