@@ -255,15 +255,20 @@ fn integers(y: &Noun) -> Result<Noun> {
         Noun::Atom(y) => {
             if let Some(y) = y.try_to_f64() {
                 if y < 0.0 {
+                    // TODO: Negative numbers should return an array in reverse order.
                     return Err(Error::Unimplemented("i. negative"));
                 }
                 // TODO: Exclude fractions?
                 let y = y as usize;
+                if y > crate::ARRAY_SIZE_LIMIT {
+                    return Err(Error::OutOfMemory);
+                }
                 Ok(Noun::Array(Array::from((0..y).into_iter().map(Atom::from))))
             } else {
                 Err(Error::Domain)
             }
         }
+        // TODO: Return a multi-dimensional array.
         _ => Err(Error::Unimplemented("integers from list")),
     }
 }

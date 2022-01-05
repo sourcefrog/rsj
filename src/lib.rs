@@ -17,3 +17,7 @@ pub mod verb;
 pub mod word;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// Error rather than allocating an array larger than this, so
+/// that the machine's memory is not exhausted.
+pub const ARRAY_SIZE_LIMIT: usize = 100_000_000;

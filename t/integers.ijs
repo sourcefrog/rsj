@@ -3,3 +3,7 @@
    i. 0
    i. -10
 error: Unimplemented("i. negative")
+   NB. There is a safety limit on the size of array that can be generated
+   NB. to avoid the process or system overcommitting memory excessively.
+   i. 10000000000000000
+error: OutOfMemory

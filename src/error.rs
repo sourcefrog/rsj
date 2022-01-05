@@ -13,6 +13,11 @@ pub enum Error {
     IoError(std::io::Error),
     /// The arrays are not the same shape or length.
     Length,
+    /// The operation would use too much memory.
+    ///
+    /// (Because of memory overcommit on Linux etc, we're not exactly
+    /// "out", but it would be imprudent to continue.)
+    OutOfMemory,
 }
 
 impl From<std::io::Error> for Error {
