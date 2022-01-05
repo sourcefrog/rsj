@@ -5,7 +5,6 @@
 // See https://code.jsoftware.com/wiki/Vocabulary/Words#Primitives
 
 use std::borrow::Cow;
-use std::convert::TryInto;
 use std::fmt;
 
 use fmt::Formatter;
