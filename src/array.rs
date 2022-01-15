@@ -93,11 +93,24 @@ where
 impl fmt::Display for Array {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // TODO: Handle multi-dimensional arrays.
+        let limit = f.precision();
+        let mut col = 0;
         for (i, atom) in self.0.iter().enumerate() {
-            if i > 0 {
-                write!(f, " ")?;
+            if let Some(limit) = limit {
+                if col + 4 >= limit {
+                    f.write_str(" ...")?;
+                    break;
+                }
             }
-            write!(f, "{}", atom)?;
+            if i > 0 {
+                f.write_str(" ")?;
+                col += 1;
+            }
+            // TODO: Maybe we should also check whether printing this atom will make the line so
+            // long that there is no room for the ellipsis?
+            let atom_str = atom.to_string();
+            col += atom_str.len();
+            f.write_str(&atom_str)?;
         }
         Ok(())
     }

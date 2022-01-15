@@ -11,6 +11,9 @@ use crate::word::{Sentence, Word};
 #[derive(Debug, Default)]
 pub struct Session {}
 
+// TODO: Make this a configurable instance variable in the Session.
+const OUTPUT_WIDTH: usize = 80;
+
 impl Session {
     pub fn new() -> Session {
         Session {}
@@ -19,13 +22,14 @@ impl Session {
     /// Evaluate one line (as text) and return the result (as text).
     pub fn eval_text(&mut self, line: &str) -> String {
         match parse(line).and_then(|s| self.eval_sentence(&s)) {
-            Ok(sentence) => format!("{}", sentence),
+            Ok(Some(word)) => format!("{:.*}", OUTPUT_WIDTH, word),
+            Ok(None) => String::new(),
             Err(err) => format!("error: {:?}", err),
         }
     }
 
     /// Evaluate a parsed sentence and return the result.
-    pub fn eval_sentence(&mut self, sentence: &Sentence) -> Result<Sentence> {
+    pub fn eval_sentence(&mut self, sentence: &Sentence) -> Result<Option<Word>> {
         // Evaluation proceeds from right to left, looking for patterns that can be evaluated
         // and reduced.
         //
@@ -53,10 +57,10 @@ impl Session {
         }
         // If the stack wasn't reduced to a single word that's probably
         // because it contains some grammar we don't support yet...?
-        if stack.len() > 1 {
-            Err(Error::Unimplemented("unhandled word on evaluation stack"))
-        } else {
-            Ok(Sentence::from_vec(stack))
+        match stack.len() {
+            0 => Ok(None),
+            1 => Ok(stack.pop()),
+            _ => Err(Error::Unimplemented("unhandled word on evaluation stack")),
         }
     }
 }

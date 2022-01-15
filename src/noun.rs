@@ -42,8 +42,8 @@ impl From<Complex64> for Noun {
 impl fmt::Display for Noun {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Noun::Atom(a) => write!(f, "{}", a),
-            Noun::Array(m) => write!(f, "{}", m),
+            Noun::Atom(a) => a.fmt(f),
+            Noun::Array(m) => m.fmt(f),
         }
     }
 }

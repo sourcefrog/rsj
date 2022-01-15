@@ -68,8 +68,8 @@ impl From<Noun> for Word {
 impl fmt::Display for Word {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Word::Noun(noun) => write!(f, "{}", noun),
-            Word::Verb(v) => write!(f, "{}", v),
+            Word::Noun(noun) => noun.fmt(f),
+            Word::Verb(verb) => verb.fmt(f),
         }
     }
 }
