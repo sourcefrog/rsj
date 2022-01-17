@@ -92,12 +92,16 @@ pub(crate) fn display_complex(n: Complex64, f: &mut fmt::Formatter) -> fmt::Resu
 
 fn display_f64(n: f64, f: &mut fmt::Formatter) -> fmt::Result {
     if n == f64::INFINITY {
-        write!(f, "_")
+        f.write_char('_')
     } else if n == f64::NEG_INFINITY {
-        write!(f, "__")
+        f.write_str("__")
     } else {
-        let mut s = format!("{}", n);
-        s = s.replace('-', "_");
-        write!(f, "{}", s)
+        let mut buffer = ryu::Buffer::new();
+        let s = buffer.format(n);
+        let s = s.replace('-', "_");
+        // Ryu formats 1 as `1.0`, but we don't want that here, especially because
+        // we commonly store integer values in f64.
+        let s = s.strip_suffix(".0").unwrap_or(&s);
+        f.write_str(s)
     }
 }
