@@ -101,30 +101,30 @@ impl Scan for Complex64 {
         }
         if lex.peek().is_ascii_digit() || lex.peek() == b'_' {
             // TODO: Parse complex numbers with j
-            // TODO: `e` exponents.
             // TODO: `x` and `p` for polar coordinates?
             // TODO: More forms from https://www.jsoftware.com/help/dictionary/dcons.htm.
             let mut num_str = String::new();
             while let Some(c) = lex.try_peek() {
                 match c {
-                    b'_' | b'.' | b'0'..=b'9' => {
+                    b'.' | b'0'..=b'9' | b'e' => {
                         // Note: This will accept '123.13.12313' but the later float parser will fail
                         // on it.
                         lex.take();
                         num_str.push(c as char);
                     }
+                    b'_' => {
+                        lex.take();
+                        num_str.push('-');
+                    }
                     c if c.is_ascii_alphabetic() => return Err(Error::Unexpected(c as char)),
                     _ => break,
                 }
             }
-            let number = if num_str == "_" {
+            let number = if num_str == "-" {
                 Complex64::new(f64::INFINITY, 0.0)
-            } else if num_str == "__" {
+            } else if num_str == "--" {
                 Complex64::new(f64::NEG_INFINITY, 0.0)
             } else {
-                if num_str.starts_with('_') {
-                    num_str.replace_range(0..=0, "-");
-                }
                 Complex64::from_str(&num_str).map_err(Error::ParseNumber)?
             };
             Ok(Some(number))

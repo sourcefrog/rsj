@@ -18,11 +18,13 @@
 
 ## Number forms
 
-| Form | Meaning           |
-| ---- | ----------------- |
-| `_`  | Positive infinity |
-| `__` | Negative infinity |
-| `_3` | Negative 3        |
+| Form   | Meaning                      |
+| ------ | ---------------------------- |
+| `_`    | Positive infinity            |
+| `__`   | Negative infinity            |
+| `_3`   | Negative 3                   |
+| `1e6`  | Scientific form; one million |
+| `1e_3` | Negative exponent; 0.001     |
 
 ## Glossary
 
