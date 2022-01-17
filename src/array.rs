@@ -96,19 +96,17 @@ impl fmt::Display for Array {
         let limit = f.precision();
         let mut col = 0;
         for (i, atom) in self.0.iter().enumerate() {
-            if let Some(limit) = limit {
-                if col + 4 >= limit {
-                    f.write_str(" ...")?;
-                    break;
-                }
-            }
             if i > 0 {
                 f.write_str(" ")?;
                 col += 1;
             }
-            // TODO: Maybe we should also check whether printing this atom will make the line so
-            // long that there is no room for the ellipsis?
             let atom_str = atom.to_string();
+            if let Some(limit) = limit {
+                if i > 0 && (col + 3 >= limit || col + atom_str.len() >= limit) {
+                    f.write_str("...")?;
+                    break;
+                }
+            }
             col += atom_str.len();
             f.write_str(&atom_str)?;
         }

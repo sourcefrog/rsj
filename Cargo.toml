@@ -24,3 +24,4 @@ version = "0.9"
 [dev-dependencies]
 insta = "1.9"
 pretty_assertions = "1.0"
+proptest = "1.0"
