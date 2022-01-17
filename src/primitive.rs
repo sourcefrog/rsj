@@ -52,7 +52,7 @@ impl Primitive {
                 return Ok(prim);
             }
         }
-        Err(Error::Unimplemented("primitive"))
+        Err(Error::Unimplemented("primitive".into()))
     }
 }
 
@@ -108,7 +108,7 @@ impl Monad {
                 ))),
             },
             Monad::Infinite(f) => f(y),
-            Monad::Unimplemented => Err(Error::Unimplemented("Monad::Unimplemented")),
+            Monad::Unimplemented => Err(Error::Unimplemented("Monad::Unimplemented".into())),
         }
     }
 }
@@ -156,7 +156,7 @@ impl Dyad {
                         .collect::<Result<Vec<Atom>>>()?,
                 ))),
             },
-            &Dyad::Unimplemented => Err(Error::Unimplemented("Dyad::Unimplemented")),
+            &Dyad::Unimplemented => Err(Error::Unimplemented("Dyad::Unimplemented".into())),
         }
     }
 }
@@ -177,7 +177,7 @@ fn signum(y: &Atom) -> Result<Atom> {
         }
     } else {
         // Should be a point on the unit circle on the line from the origin to y.
-        Err(Error::Unimplemented("signum of complex"))
+        Err(Error::Unimplemented("signum of complex".into()))
     }
 }
 
@@ -261,7 +261,7 @@ fn integers(y: &Noun) -> Result<Noun> {
             if let Some(y) = y.try_to_f64() {
                 if y < 0.0 {
                     // TODO: Negative numbers should return an array in reverse order.
-                    return Err(Error::Unimplemented("i. negative"));
+                    return Err(Error::Unimplemented("i. negative".into()));
                 }
                 // TODO: Exclude fractions?
                 let y = y as usize;
@@ -274,6 +274,6 @@ fn integers(y: &Noun) -> Result<Noun> {
             }
         }
         // TODO: Return a multi-dimensional array.
-        _ => Err(Error::Unimplemented("integers from list")),
+        _ => Err(Error::Unimplemented("integers from list".into())),
     }
 }

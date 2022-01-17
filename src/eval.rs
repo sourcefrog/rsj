@@ -60,7 +60,9 @@ impl Session {
         match stack.len() {
             0 => Ok(None),
             1 => Ok(stack.pop()),
-            _ => Err(Error::Unimplemented("unhandled word on evaluation stack")),
+            _ => Err(Error::Unimplemented(
+                "unhandled word on evaluation stack".into(),
+            )),
         }
     }
 }

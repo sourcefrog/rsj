@@ -2,6 +2,8 @@
 
 //! Error type.
 
+use std::borrow::Cow;
+
 /// An error from the interpreter.
 #[derive(Debug)]
 pub enum Error {
@@ -9,7 +11,7 @@ pub enum Error {
     ParseNumber(num_complex::ParseComplexError<std::num::ParseFloatError>),
     Domain,
     /// J language feature that's not supported yet.
-    Unimplemented(&'static str),
+    Unimplemented(Cow<'static, str>),
     IoError(std::io::Error),
     /// The arrays are not the same shape or length.
     Length,
