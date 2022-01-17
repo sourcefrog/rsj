@@ -1,4 +1,4 @@
-// Copyright 2021 Martin Pool
+// Copyright 2021, 2022 Martin Pool
 
 //! Scan J source into words.
 //!
@@ -22,7 +22,7 @@ use crate::word::{Sentence, Word};
 
 /// Parse J source into a sentence of words.
 pub fn parse(s: &str) -> Result<Sentence> {
-    Sentence::scan(&mut Lex::new(s)).map(Option::unwrap)
+    Sentence::scan(&mut Lex::new(s.as_bytes())).map(Option::unwrap)
 }
 
 /// Scan from characters into objects.
@@ -55,23 +55,22 @@ impl Scan for Word {
             if lex.is_end() {
                 return Ok(None);
             }
-            if lex.starts_with("NB.") {
+            if lex.starts_with(b"NB.") {
                 lex.drop_line();
             } else {
                 break;
             }
         }
-        if let Some(sym) = lex.take_any("#$%&*+-/<=>?@") {
-            let mut s = String::from(sym);
-            if let Some(dots) = lex.take_any(".:") {
+        if let Some(sym) = lex.take_any(b"#$%&*+-/<=>?@") {
+            let mut s = vec![sym];
+            if let Some(dots) = lex.take_any(b".:") {
                 s.push(dots);
             }
             return Ok(Some(Word::Verb(Primitive::by_name(&s)?)));
         } else if lex.peek().is_ascii_alphabetic() {
             if let Some(dots) = lex.lookahead(1) {
-                if dots == '.' || dots == ':' {
-                    let mut s = String::from(lex.take());
-                    s.push(lex.take());
+                if dots == b'.' || dots == b':' {
+                    let s = vec![lex.take(), lex.take()];
                     return Ok(Some(Word::Verb(Primitive::by_name(&s)?)));
                 }
             }
@@ -89,7 +88,7 @@ impl Scan for Word {
         } else if lex.is_end() {
             Ok(None)
         } else {
-            Err(Error::Unexpected(lex.peek()))
+            Err(Error::Unexpected(lex.peek() as char))
         }
     }
 }
@@ -100,7 +99,7 @@ impl Scan for Complex64 {
         if lex.is_end() {
             return Ok(None);
         }
-        if lex.peek().is_ascii_digit() || lex.peek() == '_' {
+        if lex.peek().is_ascii_digit() || lex.peek() == b'_' {
             // TODO: Parse complex numbers with j
             // TODO: `e` exponents.
             // TODO: `x` and `p` for polar coordinates?
@@ -108,13 +107,13 @@ impl Scan for Complex64 {
             let mut num_str = String::new();
             while let Some(c) = lex.try_peek() {
                 match c {
-                    '_' | '.' | '0'..='9' => {
+                    b'_' | b'.' | b'0'..=b'9' => {
                         // Note: This will accept '123.13.12313' but the later float parser will fail
                         // on it.
                         lex.take();
-                        num_str.push(c);
+                        num_str.push(c as char);
                     }
-                    c if c.is_ascii_alphabetic() => return Err(Error::Unexpected(c)),
+                    c if c.is_ascii_alphabetic() => return Err(Error::Unexpected(c as char)),
                     _ => break,
                 }
             }

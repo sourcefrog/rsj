@@ -9,6 +9,7 @@ publish = false
 [dependencies]
 argh = "0.1"
 assert_cmd = "2.0.2"
+bstr = "0.2"
 ndarray = "0.15"
 num-complex = "0.4"
 predicates = "2.1"

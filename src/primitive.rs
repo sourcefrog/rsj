@@ -1,4 +1,4 @@
-// Copyright 2021 Martin Pool
+// Copyright 2021, 2022 Martin Pool
 
 //! J primitive (built-in) verbs.
 
@@ -7,6 +7,7 @@
 use std::borrow::Cow;
 use std::fmt;
 
+use bstr::BStr;
 use fmt::Formatter;
 
 use crate::array::Array;
@@ -16,32 +17,36 @@ use crate::noun::Noun;
 use crate::verb::Verb;
 
 /// A builtin primitive verb, such as `-` or `<.`.
-pub struct Primitive(&'static str, Monad, Dyad);
+pub struct Primitive(&'static [u8], Monad, Dyad);
 
 // All implemented primitives.
-pub const DOLLAR: Primitive = Primitive("$", Monad::Infinite(shape_of), Dyad::Unimplemented);
-pub const MINUS: Primitive = Primitive("-", Monad::Zero(negate), Dyad::Zero(minus));
-pub const MINUS_DOT: Primitive = Primitive("-.", Monad::Zero(not), Dyad::Unimplemented);
-pub const NUMBER: Primitive = Primitive("#", Monad::Infinite(tally), Dyad::Unimplemented);
-pub const PLUS: Primitive = Primitive("+", Monad::Unimplemented, Dyad::Zero(plus));
+pub const DOLLAR: Primitive = Primitive(b"$", Monad::Infinite(shape_of), Dyad::Unimplemented);
+pub const MINUS: Primitive = Primitive(b"-", Monad::Zero(negate), Dyad::Zero(minus));
+pub const MINUS_DOT: Primitive = Primitive(b"-.", Monad::Zero(not), Dyad::Unimplemented);
+pub const NUMBER: Primitive = Primitive(b"#", Monad::Infinite(tally), Dyad::Unimplemented);
+pub const PLUS: Primitive = Primitive(b"+", Monad::Unimplemented, Dyad::Zero(plus));
 
 pub const PRIMITIVES: &[Primitive] = &[
     DOLLAR,
     MINUS,
     MINUS_DOT,
     NUMBER,
-    Primitive("%", Monad::Zero(reciprocal), Dyad::Zero(divide)),
-    Primitive("*", Monad::Zero(signum), Dyad::Zero(times)),
+    Primitive(b"%", Monad::Zero(reciprocal), Dyad::Zero(divide)),
+    Primitive(b"*", Monad::Zero(signum), Dyad::Zero(times)),
     PLUS,
-    Primitive("i.", Monad::Infinite(integers), Dyad::Unimplemented),
+    Primitive(b"i.", Monad::Infinite(integers), Dyad::Unimplemented),
 ];
 
 impl Primitive {
-    pub fn name(&self) -> &'static str {
-        self.0
+    pub fn name(&self) -> &'static BStr {
+        self.0.into()
     }
 
-    pub fn by_name(s: &str) -> Result<&'static Primitive> {
+    pub fn by_name<S>(s: &S) -> Result<&'static Primitive>
+    where
+        S: AsRef<[u8]>,
+    {
+        let s = s.as_ref();
         for prim in PRIMITIVES {
             if s == prim.name() {
                 return Ok(prim);
@@ -53,7 +58,7 @@ impl Primitive {
 
 impl Verb for Primitive {
     fn display(&self) -> Cow<str> {
-        Cow::Borrowed(self.0)
+        Cow::Owned(format!("{}", self.name()))
     }
 
     fn monad(&self, y: &Noun) -> Result<Noun> {
@@ -67,7 +72,7 @@ impl Verb for Primitive {
 
 impl fmt::Display for Primitive {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.name())
     }
 }
 

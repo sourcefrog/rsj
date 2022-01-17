@@ -23,6 +23,7 @@ pub struct Array(ArrayD<Atom>);
 
 impl Array {
     /// Construct an array by taking ownership of a Vec of Atoms.
+    #[must_use]
     pub fn from_vec(v: Vec<Atom>) -> Array {
         Array(Array1::from(v).into_dyn())
     }
@@ -36,16 +37,19 @@ impl Array {
     /// array.
     ///
     /// Since only 1d arrays are supported at the moment this is just the atoms.
+    #[must_use]
     pub fn number_items(&self) -> usize {
         self.0.len()
     }
 
     /// Return the shape of the array, as another array.
+    #[must_use]
     pub fn shape(&self) -> Array {
         self.0.shape().iter().map(|&s| Atom::from(s)).collect()
     }
 
     /// Return an empty (1-d) array.
+    #[must_use]
     pub fn empty() -> Array {
         Array::from_vec(vec![])
     }
