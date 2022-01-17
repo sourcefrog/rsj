@@ -78,7 +78,9 @@ impl fmt::Display for Primitive {
 
 impl fmt::Debug for Primitive {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        f.debug_struct("Primitive").field("name", &self.0).finish()
+        f.debug_struct("Primitive")
+            .field("name", &self.name())
+            .finish()
     }
 }
 
