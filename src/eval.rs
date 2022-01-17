@@ -3,7 +3,7 @@
 //! Evaluate sentences.
 
 use crate::error::{Error, Result};
-use crate::parse::parse;
+use crate::scan::scan_sentence;
 use crate::verb::Verb;
 use crate::word::{Sentence, Word};
 
@@ -21,7 +21,7 @@ impl Session {
 
     /// Evaluate one line (as text) and return the result (as text).
     pub fn eval_text(&mut self, line: &str) -> String {
-        match parse(line).and_then(|s| self.eval_sentence(&s)) {
+        match scan_sentence(line).and_then(|s| self.eval_sentence(&s)) {
             Ok(Some(word)) => format!("{:.*}", OUTPUT_WIDTH, word),
             Ok(None) => String::new(),
             Err(err) => format!("error: {:?}", err),

@@ -20,9 +20,8 @@ use crate::noun::Noun;
 use crate::primitive::Primitive;
 use crate::word::{Sentence, Word};
 
-/// Parse J source into a sentence of words.
-pub fn parse(s: &str) -> Result<Sentence> {
-    Sentence::scan(&mut Lex::new(s.as_bytes())).map(Option::unwrap)
+pub fn scan_sentence(s: &str) -> Result<Sentence> {
+    Sentence::scan(&mut Lex::new(s.as_bytes())).map(|os| os.unwrap_or_default())
 }
 
 /// Scan from characters into objects.

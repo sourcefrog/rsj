@@ -12,48 +12,51 @@ use pretty_assertions::assert_eq;
 use rsj::array::Array;
 use rsj::error::Error;
 use rsj::noun::Noun;
-use rsj::parse::parse;
 use rsj::primitive;
+use rsj::scan::scan_sentence;
 use rsj::word::Word;
 
 #[test]
 fn number_with_whitespace() {
-    let sentence = parse("  123.45  ").unwrap();
+    let sentence = scan_sentence("  123.45  ").unwrap();
     assert_eq!(sentence, &[Word::Noun(Noun::from(123.45))]);
 }
 
 #[test]
 fn simple_integer() {
-    assert_eq!(parse("123").unwrap(), &[Word::Noun(Noun::from(123.0))]);
+    assert_eq!(
+        scan_sentence("123").unwrap(),
+        &[Word::Noun(Noun::from(123.0))]
+    );
 }
 
 #[test]
 fn simple_floating_point() {
-    let sentence = parse("123.456").unwrap();
+    let sentence = scan_sentence("123.456").unwrap();
     assert_eq!(sentence, &[Word::Noun(123.456.into())]);
 }
 
 #[test]
 fn fraction() {
-    let s = parse("0.456789").unwrap();
+    let s = scan_sentence("0.456789").unwrap();
     assert_eq!(s, &[Word::Noun(0.456789.into())]);
 }
 
 #[test]
 fn negative() {
-    let s = parse("_1").unwrap();
+    let s = scan_sentence("_1").unwrap();
     assert_eq!(s, &[Word::Noun(Noun::from(-1.0))]);
 }
 
 #[test]
 fn infinities() {
     assert_eq!(
-        parse("_").unwrap(),
+        scan_sentence("_").unwrap(),
         &[Word::Noun(Noun::from(f64::INFINITY))]
     );
 
     assert_eq!(
-        parse("__").unwrap(),
+        scan_sentence("__").unwrap(),
         &[Word::Noun(Noun::from(f64::NEG_INFINITY))]
     );
 }
@@ -62,20 +65,20 @@ fn infinities() {
 fn primitive() {
     let minus = &primitive::MINUS;
     assert_eq!(
-        parse(" - -").unwrap(),
+        scan_sentence(" - -").unwrap(),
         &[Word::Verb(minus), Word::Verb(minus),]
     );
 }
 
 #[test]
 fn no_underscore_inside_numbers() {
-    assert!(matches!(parse("1_000"), Err(Error::ParseNumber(_))));
+    assert!(matches!(scan_sentence("1_000"), Err(Error::ParseNumber(_))));
 }
 
 #[test]
 fn several_numbers_in_one_word() {
     assert_eq!(
-        parse("  1 2 3 _4.56 _99 __").unwrap(),
+        scan_sentence("  1 2 3 _4.56 _99 __").unwrap(),
         &[Word::Noun(Noun::Array(Array::from([
             Complex64::new(1.0, 0.0),
             Complex64::new(2.0, 0.0),
