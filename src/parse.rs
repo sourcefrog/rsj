@@ -40,11 +40,11 @@ trait Scan {
 
 impl Scan for Sentence {
     fn scan(lex: &mut Lex) -> Result<Option<Sentence>> {
-        let mut words = Vec::new();
+        let mut sentence: Sentence = Vec::new();
         while let Some(word) = Word::scan(lex)? {
-            words.push(word);
+            sentence.push(word);
         }
-        Ok(Some(Sentence::from_vec(words)))
+        Ok(Some(sentence))
     }
 }
 

@@ -12,42 +12,7 @@ use crate::noun::Noun;
 use crate::primitive::Primitive;
 
 /// A sentence (like a statement) of J code, on a single line.
-// TODO: Maybe this isn't adding enough value over just a Vec<Word>?
-#[derive(Debug, Clone, PartialEq)]
-pub struct Sentence(Vec<Word>);
-
-impl Sentence {
-    /// Return a slice of the words in this sentence.
-    pub fn words(&self) -> &[Word] {
-        &self.0
-    }
-
-    /// Return a J-formatted representation of the sentence.
-    pub fn display(&self) -> String {
-        format!("{}", self)
-    }
-
-    /// Wrap a vec of words as a Sentence.
-    pub fn from_vec(vec: Vec<Word>) -> Sentence {
-        Sentence(vec)
-    }
-
-    pub fn empty() -> Sentence {
-        Sentence(Vec::new())
-    }
-}
-
-impl fmt::Display for Sentence {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (i, w) in self.0.iter().enumerate() {
-            if i > 0 {
-                write!(f, " ")?;
-            }
-            write!(f, "{}", w)?;
-        }
-        Ok(())
-    }
-}
+pub type Sentence = Vec<Word>;
 
 /// A single J word.
 ///

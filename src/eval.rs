@@ -34,7 +34,7 @@ impl Session {
         // and reduced.
         //
         // See https://www.jsoftware.com/help/dictionary/dicte.htm.
-        let mut stack: Vec<Word> = sentence.words().to_vec();
+        let mut stack: Vec<Word> = sentence.clone();
         // We're currently trying to evaluate stack[cursor..(cursor+4)].
         for cursor in (0..(stack.len())).rev() {
             // dbg!(&stack);

@@ -19,60 +19,50 @@ use rsj::word::Word;
 #[test]
 fn number_with_whitespace() {
     let sentence = parse("  123.45  ").unwrap();
-    assert_eq!(sentence.words(), &[Word::Noun(Noun::from(123.45))]);
-    assert_eq!(sentence.display(), "123.45");
+    assert_eq!(sentence, &[Word::Noun(Noun::from(123.45))]);
 }
 
 #[test]
 fn simple_integer() {
-    assert_eq!(
-        parse("123").unwrap().words(),
-        &[Word::Noun(Noun::from(123.0))]
-    );
-    assert_eq!(parse("123").unwrap().display(), "123");
+    assert_eq!(parse("123").unwrap(), &[Word::Noun(Noun::from(123.0))]);
 }
 
 #[test]
 fn simple_floating_point() {
     let sentence = parse("123.456").unwrap();
-    assert_eq!(sentence.display(), "123.456");
-    assert_eq!(sentence.words(), &[Word::Noun(123.456.into())]);
+    assert_eq!(sentence, &[Word::Noun(123.456.into())]);
 }
 
 #[test]
 fn fraction() {
     let s = parse("0.456789").unwrap();
-    assert_eq!(s.display(), "0.456789");
-    assert_eq!(s.words(), &[Word::Noun(0.456789.into())]);
+    assert_eq!(s, &[Word::Noun(0.456789.into())]);
 }
 
 #[test]
 fn negative() {
     let s = parse("_1").unwrap();
-    assert_eq!(s.display(), "_1");
-    assert_eq!(s.words(), &[Word::Noun(Noun::from(-1.0))]);
+    assert_eq!(s, &[Word::Noun(Noun::from(-1.0))]);
 }
 
 #[test]
 fn infinities() {
     assert_eq!(
-        parse("_").unwrap().words(),
+        parse("_").unwrap(),
         &[Word::Noun(Noun::from(f64::INFINITY))]
     );
-    assert_eq!(parse("_").unwrap().display(), "_");
 
     assert_eq!(
-        parse("__").unwrap().words(),
+        parse("__").unwrap(),
         &[Word::Noun(Noun::from(f64::NEG_INFINITY))]
     );
-    assert_eq!(parse("__").unwrap().display(), "__");
 }
 
 #[test]
 fn primitive() {
     let minus = &primitive::MINUS;
     assert_eq!(
-        parse(" - -").unwrap().words(),
+        parse(" - -").unwrap(),
         &[Word::Verb(minus), Word::Verb(minus),]
     );
 }
@@ -85,7 +75,7 @@ fn no_underscore_inside_numbers() {
 #[test]
 fn several_numbers_in_one_word() {
     assert_eq!(
-        parse("  1 2 3 _4.56 _99 __").unwrap().words(),
+        parse("  1 2 3 _4.56 _99 __").unwrap(),
         &[Word::Noun(Noun::Array(Array::from([
             Complex64::new(1.0, 0.0),
             Complex64::new(2.0, 0.0),
@@ -94,9 +84,5 @@ fn several_numbers_in_one_word() {
             Complex64::new(-99.0, 0.0),
             Complex64::new(f64::NEG_INFINITY, 0.0),
         ])))]
-    );
-    assert_eq!(
-        parse("  1 2 3 _4.56 _99 __").unwrap().display(),
-        "1 2 3 _4.56 _99 __"
     );
 }
