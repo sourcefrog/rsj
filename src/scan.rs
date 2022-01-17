@@ -73,6 +73,10 @@ impl Scan for Word {
                     return Ok(Some(Word::Verb(Primitive::by_name(&s)?)));
                 }
             }
+        } else if lex.take_if(b'(') {
+            return Ok(Some(Word::OpenParen));
+        } else if lex.take_if(b')') {
+            return Ok(Some(Word::CloseParen));
         }
         // Take as many contiguous numbers as we can as one list-of-numbers "word".
         let mut numbers: Vec<Atom> = Vec::new();
@@ -108,11 +112,10 @@ impl Scan for Complex64 {
                     b'.' | b'0'..=b'9' | b'e' => {
                         // Note: This will accept '123.13.12313' but the later float parser will fail
                         // on it.
-                        lex.take();
-                        num_str.push(c as char);
+                        num_str.push(lex.take() as char);
                     }
                     b'_' => {
-                        lex.take();
+                        lex.drop();
                         num_str.push('-');
                     }
                     c if c.is_ascii_alphabetic() => return Err(Error::Unexpected(c as char)),

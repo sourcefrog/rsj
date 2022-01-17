@@ -22,6 +22,8 @@ pub type Sentence = Vec<Word>;
 pub enum Word {
     Noun(Noun),
     Verb(&'static Primitive),
+    OpenParen,
+    CloseParen,
 }
 
 impl From<Noun> for Word {
@@ -35,6 +37,8 @@ impl fmt::Display for Word {
         match self {
             Word::Noun(noun) => noun.fmt(f),
             Word::Verb(verb) => verb.fmt(f),
+            Word::OpenParen => f.write_str("("),
+            Word::CloseParen => f.write_str(")"),
         }
     }
 }
