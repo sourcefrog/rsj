@@ -20,6 +20,8 @@ pub enum Error {
     /// (Because of memory overcommit on Linux etc, we're not exactly
     /// "out", but it would be imprudent to continue.)
     OutOfMemory,
+    /// The expression is not interpretable in J's grammar as implemented.
+    SyntaxError,
 }
 
 impl From<std::io::Error> for Error {

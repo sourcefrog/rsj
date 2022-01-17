@@ -1,5 +1,22 @@
 # RSJ cheatsheet
 
+## Evaluation
+
+J is evaluated from right to left, with no concept of operator precedence,
+except that parenthesis cause the subexpression to be evaluated first in the
+usual way. Another way to think about this is that the right argument of any
+verb is the entire expression to the right, until reaching a parenthesis. For
+example,
+
+```
+   10*3+2
+50
+   2+10*3
+32
+   (10*3)+2
+32
+```
+
 ## Verbs
 
 | Verb   | Name       | Meaning                                                                                                |

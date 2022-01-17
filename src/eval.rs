@@ -1,4 +1,4 @@
-// Copyright 2021 Martin Pool
+// Copyright 2021, 2022 Martin Pool
 
 //! Evaluate sentences.
 
@@ -36,33 +36,58 @@ impl Session {
         // See https://www.jsoftware.com/help/dictionary/dicte.htm.
         let mut stack: Vec<Word> = sentence.clone();
         // We're currently trying to evaluate stack[cursor..(cursor+4)].
-        for cursor in (0..(stack.len())).rev() {
-            // dbg!(&stack);
-            if stack.len() - cursor < 2 {
-                continue; // not enough to make progress
-            }
-            if cursor == 0 || matches!(stack[cursor - 1], Word::Verb(..)) {
-                // TODO: Parens and assignment should also match here.
+        let mut cursor = stack.len();
+        loop {
+            // dbg!(&cursor, &stack);
+            // match START ^ VERB:v NOUN:y ...
+            // or VERB ^ VERB:v NOUN:y
+            // or OPENPAREN ^ VERB:v NOUN:y
+            // into applying v to y
+            if cursor == 0 || matches!(stack[cursor - 1], Word::Verb(..) | Word::OpenParen) {
+                // TODO: Assignment should also match here.
                 if let [Word::Verb(v), Word::Noun(y), ..] = &stack[cursor..] {
                     stack[cursor] = Word::Noun(v.monad(y)?);
                     stack.remove(cursor + 1);
-                    // TODO: Maybe try again at the same cursor position?
                 }
             }
             if let [Word::Noun(x), Word::Verb(v), Word::Noun(y), ..] = &stack[cursor..] {
+                // ... NOUN:x VERB:v NOUN:y ...
                 stack[cursor] = Word::Noun(v.dyad(x, y)?);
                 stack.remove(cursor + 1);
                 stack.remove(cursor + 1);
+            } else if let [Word::OpenParen, Word::Verb(_) | Word::Noun(_), Word::CloseParen, ..] =
+                &stack[cursor..]
+            {
+                // ... OPEN w CLOSE => w
+                stack.remove(cursor);
+                stack.remove(cursor + 1);
+                cursor += 1;
             }
+            if cursor == 0 {
+                break;
+            } else {
+                cursor -= 1
+            };
         }
-        // If the stack wasn't reduced to a single word that's probably
-        // because it contains some grammar we don't support yet...?
         match stack.len() {
             0 => Ok(None),
-            1 => Ok(stack.pop()),
-            _ => Err(Error::Unimplemented(
-                "unhandled word on evaluation stack".into(),
-            )),
+            1 => {
+                let w = stack.pop().unwrap();
+                // TODO: This feels kludgey and indicates perhaps the word type
+                // should not contain both syntax like parens and also nouns and
+                // verbs?
+                if matches!(w, Word::Noun(_) | Word::Verb(_)) {
+                    Ok(Some(w))
+                } else {
+                    Err(Error::SyntaxError)
+                }
+            }
+            _ => {
+                // If the stack wasn't reduced to a single word that's probably
+                // because it contains some grammar that's either invalid, or at least not
+                // implemented yet.
+                Err(Error::SyntaxError)
+            }
         }
     }
 }
